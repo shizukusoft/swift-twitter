@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum Error: Swift.Error {
+public enum Error: Swift.Error {
     case unknown
     case request(_ underlyingError: Swift.Error)
 }

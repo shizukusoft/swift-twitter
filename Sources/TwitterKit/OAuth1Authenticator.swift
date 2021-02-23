@@ -9,9 +9,9 @@ import Foundation
 import Alamofire
 import CommonCrypto
 
-class OAuth1Authenticator {
-    struct RequestToken: Decodable {
-        let token: String
+public class OAuth1Authenticator {
+    public struct RequestToken: Decodable {
+        public let token: String
         let tokenSecret: String
         let callbackConfirmed: Bool
 
@@ -145,19 +145,19 @@ class OAuth1Authenticator {
 }
 
 extension OAuth1Authenticator: Alamofire.Authenticator {
-    func apply(_ credential: OAuth1Credential, to urlRequest: inout URLRequest) {
+    public func apply(_ credential: OAuth1Credential, to urlRequest: inout URLRequest) {
         self.apply(credential: credential, to: &urlRequest)
     }
 
-    func refresh(_ credential: OAuth1Credential, for session: Alamofire.Session, completion: @escaping (Result<OAuth1Credential, Swift.Error>) -> Void) {
+    public func refresh(_ credential: OAuth1Credential, for session: Alamofire.Session, completion: @escaping (Result<OAuth1Credential, Swift.Error>) -> Void) {
 
     }
 
-    func didRequest(_ urlRequest: URLRequest, with response: HTTPURLResponse, failDueToAuthenticationError error: Swift.Error) -> Bool {
+    public func didRequest(_ urlRequest: URLRequest, with response: HTTPURLResponse, failDueToAuthenticationError error: Swift.Error) -> Bool {
         return false
     }
 
-    func isRequest(_ urlRequest: URLRequest, authenticatedWith credential: OAuth1Credential) -> Bool {
+    public func isRequest(_ urlRequest: URLRequest, authenticatedWith credential: OAuth1Credential) -> Bool {
         return true
     }
 }

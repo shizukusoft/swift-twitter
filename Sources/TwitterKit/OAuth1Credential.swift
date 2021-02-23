@@ -8,13 +8,13 @@
 import Foundation
 import Alamofire
 
-struct OAuth1Credential: Alamofire.AuthenticationCredential {
-    let token: String?
+public struct OAuth1Credential: Alamofire.AuthenticationCredential {
+    public let token: String?
     let tokenSecret: String?
 
-    var requiresRefresh: Bool { false }
+    public var requiresRefresh: Bool { false }
 
-    init(token: String?, tokenSecret: String?) {
+    public init(token: String?, tokenSecret: String?) {
         self.token = token
         self.tokenSecret = tokenSecret
     }
