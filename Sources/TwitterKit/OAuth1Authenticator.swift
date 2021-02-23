@@ -10,17 +10,66 @@ import Alamofire
 import CommonCrypto
 
 class OAuth1Authenticator {
+    struct RequestToken: Decodable {
+        let token: String
+        let tokenSecret: String
+        let callbackConfirmed: Bool
+
+        enum CodingKeys: String, CodingKey {
+            case token = "oauth_token"
+            case tokenSecret = "oauth_token_secret"
+            case callbackConfirmed = "oauth_callback_confirmed"
+        }
+    }
+
     private unowned let session: Session
 
     init(session: Session) {
         self.session = session
     }
 
-    public func requestToken(callback: String) {
+    public func requestToken(callback: String, completion: @escaping (Result<RequestToken, Error>) -> Void) {
+        var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/oauth/request_token")!)
+        urlRequest.method = .post
 
+        apply(additionalOAuthParameters: ["oauth_callback": callback], to: &urlRequest)
+
+        session.alamofireSession
+            .request(urlRequest)
+            .validate(statusCode: 200..<300)
+            .responseString { response in
+                completion(
+                    response.result
+                        .mapError { .request($0) }
+                        .flatMap {
+                            var urlComponents = URLComponents()
+                            urlComponents.percentEncodedQuery = $0
+
+                            guard let token = urlComponents.queryItems?.first(where: { $0.name == "oauth_token" })?.value else {
+                                return .failure(.unknown)
+                            }
+
+                            guard let tokenSecret = urlComponents.queryItems?.first(where: { $0.name == "oauth_token_secret" })?.value else {
+                                return .failure(.unknown)
+                            }
+
+                            guard let callbackConfirmed = urlComponents.queryItems?.first(where: { $0.name == "oauth_callback_confirmed" })?.value else {
+                                return .failure(.unknown)
+                            }
+
+                            return .success(RequestToken(token: token, tokenSecret: tokenSecret, callbackConfirmed: callbackConfirmed == "true"))
+                        }
+                )
+            }
     }
 
-    func apply(_ credential: OAuth1Credential, timestamp: TimeInterval, nonce: String, to urlRequest: inout URLRequest) {
+    func apply(
+        credential: OAuth1Credential? = nil,
+        nonce: String = UUID().uuidString,
+        timestamp: TimeInterval = Date().timeIntervalSinceNow,
+        additionalOAuthParameters: [String: String]? = nil,
+        to urlRequest: inout URLRequest
+    ) {
         var bodyURLComponents = URLComponents()
         bodyURLComponents.percentEncodedQuery = urlRequest.httpBody
             .flatMap { String(data: $0, encoding: .utf8) }
@@ -40,8 +89,14 @@ class OAuth1Authenticator {
             URLQueryItem(name: "oauth_version", value: "1.0")
         ]
 
-        if let token = credential.token {
+        if let token = credential?.token {
             oauthQueryItems += [URLQueryItem(name: "oauth_token", value: token)]
+        }
+
+        if let additionalOAuthParameters = additionalOAuthParameters {
+            oauthQueryItems += additionalOAuthParameters.map {
+                URLQueryItem(name: $0.key, value: $0.value)
+            }
         }
 
         let oauthSignatureParameterString = (bodyQueryItems + urlQueryItems + oauthQueryItems)
@@ -64,7 +119,7 @@ class OAuth1Authenticator {
 
         let oauthSigningKey = [
             session.consumerSecret.addingPercentEncoding(withAllowedCharacters: .twtk_rfc3986Allowed),
-            credential.tokenSecret?.addingPercentEncoding(withAllowedCharacters: .twtk_rfc3986Allowed)
+            credential?.tokenSecret?.addingPercentEncoding(withAllowedCharacters: .twtk_rfc3986Allowed)
         ].compactMap { $0 }.joined(separator: "&")
 
         var digest = [UInt8](repeating: 0, count: Int(CC_SHA1_DIGEST_LENGTH))
@@ -91,14 +146,14 @@ class OAuth1Authenticator {
 
 extension OAuth1Authenticator: Alamofire.Authenticator {
     func apply(_ credential: OAuth1Credential, to urlRequest: inout URLRequest) {
-        self.apply(credential, timestamp: Date().timeIntervalSinceNow, nonce: UUID().uuidString, to: &urlRequest)
+        self.apply(credential: credential, to: &urlRequest)
     }
 
-    func refresh(_ credential: OAuth1Credential, for session: Alamofire.Session, completion: @escaping (Result<OAuth1Credential, Error>) -> Void) {
+    func refresh(_ credential: OAuth1Credential, for session: Alamofire.Session, completion: @escaping (Result<OAuth1Credential, Swift.Error>) -> Void) {
 
     }
 
-    func didRequest(_ urlRequest: URLRequest, with response: HTTPURLResponse, failDueToAuthenticationError error: Error) -> Bool {
+    func didRequest(_ urlRequest: URLRequest, with response: HTTPURLResponse, failDueToAuthenticationError error: Swift.Error) -> Bool {
         return false
     }
 
