@@ -20,7 +20,7 @@ final class AuthenticaterTests: XCTestCase {
         urlRequest.httpMethod = "POST"
         urlRequest.httpBody = "status=Hello%20Ladies%20%2b%20Gentlemen%2c%20a%20signed%20OAuth%20request%21".data(using: .utf8)
 
-        let credential = Credential(token: "370773112-GmHxMAgYyLbNEtIKZeRNFsMKPR9EyMZeS9weJAEb", tokenSecret: "LswwdoUaIvS8ltyTt5jkRh4J50vUPVVHtR2YPi5kE")
+        let credential = OAuth1Credential(token: "370773112-GmHxMAgYyLbNEtIKZeRNFsMKPR9EyMZeS9weJAEb", tokenSecret: "LswwdoUaIvS8ltyTt5jkRh4J50vUPVVHtR2YPi5kE")
 
         session.authenticator.apply(credential, timestamp: 1318622958, nonce: "kYjzVBB8Y0ZFabxSWbWovY3uYSQ2pTgmZeNu2VS4cg", to: &urlRequest)
 

@@ -1,5 +1,5 @@
 //
-//  Credential.swift
+//  OAuth1Credential.swift
 //  
 //
 //  Created by Jaehong Kang on 2021/02/23.
@@ -8,7 +8,7 @@
 import Foundation
 import Alamofire
 
-struct Credential: Alamofire.AuthenticationCredential {
+struct OAuth1Credential: Alamofire.AuthenticationCredential {
     let token: String?
     let tokenSecret: String?
 

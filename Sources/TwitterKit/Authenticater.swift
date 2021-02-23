@@ -1,5 +1,5 @@
 //
-//  Authenticater.swift
+//  OAuth1Authenticator.swift
 //  
 //
 //  Created by Jaehong Kang on 2021/02/23.
@@ -9,7 +9,7 @@ import Foundation
 import Alamofire
 import CommonCrypto
 
-class Authenticator {
+class OAuth1Authenticator {
     private unowned let session: Session
 
     init(session: Session) {
@@ -20,7 +20,7 @@ class Authenticator {
 
     }
 
-    func apply(_ credential: Credential, timestamp: TimeInterval, nonce: String, to urlRequest: inout URLRequest) {
+    func apply(_ credential: OAuth1Credential, timestamp: TimeInterval, nonce: String, to urlRequest: inout URLRequest) {
         var bodyURLComponents = URLComponents()
         bodyURLComponents.percentEncodedQuery = urlRequest.httpBody
             .flatMap { String(data: $0, encoding: .utf8) }
@@ -89,12 +89,12 @@ class Authenticator {
     }
 }
 
-extension Authenticator: Alamofire.Authenticator {
-    func apply(_ credential: Credential, to urlRequest: inout URLRequest) {
+extension OAuth1Authenticator: Alamofire.Authenticator {
+    func apply(_ credential: OAuth1Credential, to urlRequest: inout URLRequest) {
         self.apply(credential, timestamp: Date().timeIntervalSinceNow, nonce: UUID().uuidString, to: &urlRequest)
     }
 
-    func refresh(_ credential: Credential, for session: Alamofire.Session, completion: @escaping (Result<Credential, Error>) -> Void) {
+    func refresh(_ credential: OAuth1Credential, for session: Alamofire.Session, completion: @escaping (Result<OAuth1Credential, Error>) -> Void) {
 
     }
 
@@ -102,7 +102,7 @@ extension Authenticator: Alamofire.Authenticator {
         return false
     }
 
-    func isRequest(_ urlRequest: URLRequest, authenticatedWith credential: Credential) -> Bool {
+    func isRequest(_ urlRequest: URLRequest, authenticatedWith credential: OAuth1Credential) -> Bool {
         return true
     }
 }
