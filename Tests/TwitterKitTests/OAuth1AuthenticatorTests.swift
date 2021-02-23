@@ -1,5 +1,5 @@
 //
-//  AuthenticaterTests.swift
+//  OAuth1AuthenticatorTests.swift
 //  
 //
 //  Created by Jaehong Kang on 2021/02/23.
@@ -8,7 +8,7 @@
 import XCTest
 @testable import TwitterKit
 
-final class AuthenticaterTests: XCTestCase {
+final class OAuth1AuthenticatorTests: XCTestCase {
     func testApply() {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct
