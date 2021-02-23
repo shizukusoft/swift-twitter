@@ -1,5 +1,5 @@
 //
-//  URLSessionConfiguration+TwitterKit.swift
+//  Foundation.URLSessionConfiguration.swift
 //  
 //
 //  Created by Jaehong Kang on 2021/02/23.
