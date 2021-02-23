@@ -22,7 +22,7 @@ final class OAuth1AuthenticatorTests: XCTestCase {
 
         let credential = OAuth1Credential(token: "370773112-GmHxMAgYyLbNEtIKZeRNFsMKPR9EyMZeS9weJAEb", tokenSecret: "LswwdoUaIvS8ltyTt5jkRh4J50vUPVVHtR2YPi5kE")
 
-        session.authenticator.apply(credential, timestamp: 1318622958, nonce: "kYjzVBB8Y0ZFabxSWbWovY3uYSQ2pTgmZeNu2VS4cg", to: &urlRequest)
+        session.oauth1Authenticator.apply(credential: credential, nonce: "kYjzVBB8Y0ZFabxSWbWovY3uYSQ2pTgmZeNu2VS4cg", timestamp: 1318622958, to: &urlRequest)
 
         XCTAssertEqual(
             urlRequest.headers.value(for: "Authorization"),
