@@ -66,7 +66,7 @@ public class OAuth1Authenticator {
     func apply(
         credential: OAuth1Credential? = nil,
         nonce: String = UUID().uuidString,
-        timestamp: TimeInterval = Date().timeIntervalSinceNow,
+        timestamp: TimeInterval = Date().timeIntervalSince1970,
         additionalOAuthParameters: [String: String]? = nil,
         to urlRequest: inout URLRequest
     ) {
