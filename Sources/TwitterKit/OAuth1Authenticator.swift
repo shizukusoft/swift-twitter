@@ -10,25 +10,38 @@ import Alamofire
 import CommonCrypto
 
 public class OAuth1Authenticator {
-    public struct RequestToken: Decodable {
+    public struct TokenResponse {
         public let token: String
         let tokenSecret: String
-        let callbackConfirmed: Bool
+        let callbackConfirmed: Bool?
 
-        enum CodingKeys: String, CodingKey {
-            case token = "oauth_token"
-            case tokenSecret = "oauth_token_secret"
-            case callbackConfirmed = "oauth_callback_confirmed"
+        init?(response: String) {
+            var urlComponents = URLComponents()
+            urlComponents.percentEncodedQuery = response
+
+            guard let token = urlComponents.queryItems?.first(where: { $0.name == "oauth_token" })?.value else {
+                return nil
+            }
+            self.token = token
+
+            guard let tokenSecret = urlComponents.queryItems?.first(where: { $0.name == "oauth_token_secret" })?.value else {
+                return nil
+            }
+            self.tokenSecret = tokenSecret
+
+            self.callbackConfirmed = urlComponents.queryItems?.first(where: { $0.name == "oauth_callback_confirmed" })?.value.flatMap { $0 == "true" }
         }
     }
 
-    private unowned let session: Session
+    private weak var session: Session?
 
     init(session: Session) {
         self.session = session
     }
 
-    public func requestToken(callback: String, completion: @escaping (Result<RequestToken, Error>) -> Void) {
+    public func fetchRequestToken(callback: String, completion: @escaping (Result<TokenResponse, Error>) -> Void) {
+        guard let session = session else { completion(.failure(.unknown)); return; }
+
         var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/oauth/request_token")!)
         urlRequest.method = .post
 
@@ -37,27 +50,45 @@ public class OAuth1Authenticator {
         session.alamofireSession
             .request(urlRequest)
             .validate(statusCode: 200..<300)
-            .responseString { response in
+            .responseString(queue: session.mainQueue) { response in
                 completion(
                     response.result
                         .mapError { .request($0) }
                         .flatMap {
-                            var urlComponents = URLComponents()
-                            urlComponents.percentEncodedQuery = $0
-
-                            guard let token = urlComponents.queryItems?.first(where: { $0.name == "oauth_token" })?.value else {
+                            guard let token = TokenResponse(response: $0) else {
                                 return .failure(.unknown)
                             }
 
-                            guard let tokenSecret = urlComponents.queryItems?.first(where: { $0.name == "oauth_token_secret" })?.value else {
+                            return .success(token)
+                        }
+                )
+            }
+    }
+
+    public func fetchAccessToken(token: String, verifier: String, completion: @escaping (Result<TokenResponse, Error>) -> Void) {
+        guard let session = session else { completion(.failure(.unknown)); return; }
+
+        var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/oauth/access_token")!)
+        urlRequest.method = .post
+
+        apply(additionalOAuthParameters: [
+            "oauth_verifier": verifier,
+            "oauth_token": token
+        ], to: &urlRequest)
+
+        session.alamofireSession
+            .request(urlRequest)
+            .validate(statusCode: 200..<300)
+            .responseString(queue: session.mainQueue) { response in
+                completion(
+                    response.result
+                        .mapError { .request($0) }
+                        .flatMap {
+                            guard let token = TokenResponse(response: $0) else {
                                 return .failure(.unknown)
                             }
 
-                            guard let callbackConfirmed = urlComponents.queryItems?.first(where: { $0.name == "oauth_callback_confirmed" })?.value else {
-                                return .failure(.unknown)
-                            }
-
-                            return .success(RequestToken(token: token, tokenSecret: tokenSecret, callbackConfirmed: callbackConfirmed == "true"))
+                            return .success(token)
                         }
                 )
             }
@@ -82,7 +113,7 @@ public class OAuth1Authenticator {
         urlComponents?.query = nil
 
         var oauthQueryItems = [
-            URLQueryItem(name: "oauth_consumer_key", value: session.consumerKey),
+            URLQueryItem(name: "oauth_consumer_key", value: session?.consumerKey),
             URLQueryItem(name: "oauth_nonce", value: nonce),
             URLQueryItem(name: "oauth_signature_method", value: "HMAC-SHA1"),
             URLQueryItem(name: "oauth_timestamp", value: "\(UInt(timestamp))"),
@@ -118,8 +149,8 @@ public class OAuth1Authenticator {
         ].compactMap { $0 }.joined(separator: "&")
 
         let oauthSigningKey = [
-            session.consumerSecret.addingPercentEncoding(withAllowedCharacters: .twtk_rfc3986Allowed),
-            credential?.tokenSecret?.addingPercentEncoding(withAllowedCharacters: .twtk_rfc3986Allowed) ?? ""
+            session?.consumerSecret.addingPercentEncoding(withAllowedCharacters: .twtk_rfc3986Allowed),
+            credential?.tokenSecret.addingPercentEncoding(withAllowedCharacters: .twtk_rfc3986Allowed) ?? ""
         ].compactMap { $0 }.joined(separator: "&")
 
         var digest = [UInt8](repeating: 0, count: Int(CC_SHA1_DIGEST_LENGTH))
