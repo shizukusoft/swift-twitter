@@ -119,7 +119,7 @@ public class OAuth1Authenticator {
 
         let oauthSigningKey = [
             session.consumerSecret.addingPercentEncoding(withAllowedCharacters: .twtk_rfc3986Allowed),
-            credential?.tokenSecret?.addingPercentEncoding(withAllowedCharacters: .twtk_rfc3986Allowed)
+            credential?.tokenSecret?.addingPercentEncoding(withAllowedCharacters: .twtk_rfc3986Allowed) ?? ""
         ].compactMap { $0 }.joined(separator: "&")
 
         var digest = [UInt8](repeating: 0, count: Int(CC_SHA1_DIGEST_LENGTH))
