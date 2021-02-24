@@ -39,7 +39,7 @@ public class OAuth1Authenticator {
         self.session = session
     }
 
-    public func fetchRequestToken(callback: String, completion: @escaping (Result<TokenResponse, Error>) -> Void) {
+    public func fetchRequestToken(callback: String, completion: @escaping (Result<TokenResponse, TwitterKitError>) -> Void) {
         guard let session = session else { completion(.failure(.unknown)); return; }
 
         var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/oauth/request_token")!)
@@ -65,7 +65,7 @@ public class OAuth1Authenticator {
             }
     }
 
-    public func fetchAccessToken(token: String, verifier: String, completion: @escaping (Result<TokenResponse, Error>) -> Void) {
+    public func fetchAccessToken(token: String, verifier: String, completion: @escaping (Result<TokenResponse, TwitterKitError>) -> Void) {
         guard let session = session else { completion(.failure(.unknown)); return; }
 
         var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/oauth/access_token")!)
