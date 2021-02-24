@@ -12,8 +12,8 @@ import CommonCrypto
 public class OAuth1Authenticator {
     public struct TokenResponse {
         public let token: String
-        let tokenSecret: String
-        let callbackConfirmed: Bool?
+        public let tokenSecret: String
+        public let callbackConfirmed: Bool?
 
         init?(response: String) {
             var urlComponents = URLComponents()
