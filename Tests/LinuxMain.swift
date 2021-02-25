@@ -3,5 +3,6 @@ import XCTest
 import TwitterKitTests
 
 var tests = [XCTestCaseEntry]()
-tests += TwitterKitTests.allTests()
+tests += TwitterKitTests.__allTests()
+
 XCTMain(tests)
