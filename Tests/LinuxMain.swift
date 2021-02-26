@@ -1,7 +1,5 @@
-import XCTest
-
-import TwitterKitTests
-
-var tests = [XCTestCaseEntry]()
-tests += TwitterKitTests.allTests()
-XCTMain(tests)
+#error("""
+  -----------------------------------------------------
+  Please test with `swift test --enable-test-discovery`
+  -----------------------------------------------------
+  """)
