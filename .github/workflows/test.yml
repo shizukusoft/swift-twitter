@@ -22,6 +22,18 @@ jobs:
       SWIFT_VERSION: ${{ matrix.swift-version }}
     steps:
       - uses: actions/checkout@v2
+      - name: Setup Swift
+        run: |
+          git clone https://github.com/kylef/swiftenv.git ~/.swiftenv
+
+          export SWIFTENV_ROOT="$HOME/.swiftenv"
+          export PATH="$SWIFTENV_ROOT/bin:$SWIFTENV_ROOT/shims:$PATH"
+
+          echo 'export SWIFTENV_ROOT="$HOME/.swiftenv"' >> ~/.bash_profile
+          echo 'export PATH="$SWIFTENV_ROOT/bin:$PATH"' >> ~/.bash_profile
+          echo 'eval "$(swiftenv init -)"' >> ~/.bash_profile
+
+          swiftenv install -s
       - run: eval "$(curl -sL https://swiftenv.fuller.li/install.sh)"
       - name: Build
         run: swift build -v
