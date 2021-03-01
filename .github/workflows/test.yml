@@ -2,8 +2,6 @@ name: Test
 
 on:
   push:
-    branches-ignore:
-      - 'feature/**'
     paths:
       - '.github/workflows/test.yml'
       - '**/*.swift'
@@ -13,16 +11,13 @@ on:
       - '**/*.swift'
 
 jobs:
-  test:
-  
+  swift-test:
     strategy:
       fail-fast: false
       matrix:
         operating-system: [macOS-latest]
         xcode-version: ["12.0.1", "12.1", "12.2", "12.3", "12.4"]
-
     runs-on: ${{ matrix.operating-system }}
-
     steps:
     - uses: actions/checkout@v2
     - uses: sinoru/actions-setup-xcode@v1.1
@@ -34,3 +29,27 @@ jobs:
       run: swift build -v
     - name: Run tests
       run: swift test -v
+  xcode-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        xcode-version: ["12.4"]
+        xcode-destination: [
+          "platform=OS X,arch=x86_64",
+          "platform=OS X,arch=x86_64,variant=Mac Catalyst",
+          "platform=iOS Simulator,name=iPhone 12 Pro,OS=latest",
+          "platform=tvOS Simulator,name=Apple TV 4K,OS=latest",
+          "platform=watchOS Simulator,name=Apple Watch Series 6 - 44mm,OS=latest",
+        ]
+    runs-on: macOS-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: sinoru/actions-setup-xcode@v1.1
+      with:
+        xcode-version: ${{ matrix.xcode-version }}
+        apple-id: bot@sinoru.io
+        apple-id-password: ${{ secrets.APPLE_ID_PASSWORD }}
+    - name: Analyze
+      run: xcodebuild -scheme TwitterKit -destination '${{ matrix.xcode-destination }}' analyze
+    - name: Test
+      run: xcodebuild -scheme TwitterKit -destination '${{ matrix.xcode-destination }}' test
