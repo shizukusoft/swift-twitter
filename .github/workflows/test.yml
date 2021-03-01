@@ -16,29 +16,21 @@ jobs:
       fail-fast: false
       matrix:
         operating-system: [macOS-latest]
-        swift-version: ["5.3.0", "5.3.1", "5.3.2"]
+        swift-version: ["5.3", "5.3.1", "5.3.2"]
     runs-on: ${{ matrix.operating-system }}
-    env:
-      SWIFT_VERSION: ${{ matrix.swift-version }}
     steps:
       - uses: actions/checkout@v2
-      - name: Setup Swift
-        run: |
-          git clone https://github.com/kylef/swiftenv.git ~/.swiftenv
-
-          export SWIFTENV_ROOT="$HOME/.swiftenv"
-          export PATH="$SWIFTENV_ROOT/bin:$SWIFTENV_ROOT/shims:$PATH"
-
-          echo 'export SWIFTENV_ROOT="$HOME/.swiftenv"' >> ~/.bash_profile
-          echo 'export PATH="$SWIFTENV_ROOT/bin:$PATH"' >> ~/.bash_profile
-          echo 'eval "$(swiftenv init -)"' >> ~/.bash_profile
-
-          swiftenv install -s
-      - run: eval "$(curl -sL https://swiftenv.fuller.li/install.sh)"
+      - uses: sinoru/actions-setup-swift@v1
+        with:
+          swift-version: ${{ matrix.swift-version }}
       - name: Build
         run: swift build -v
+        env:
+          SWIFT_VERSION: ${{ matrix.swift-version }}
       - name: Run tests
         run: swift test -v
+        env:
+          SWIFT_VERSION: ${{ matrix.swift-version }}
   xcode-test:
     strategy:
       fail-fast: false
