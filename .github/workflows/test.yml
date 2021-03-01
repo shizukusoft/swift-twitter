@@ -49,6 +49,8 @@ jobs:
         xcode-version: ${{ matrix.xcode-version }}
         apple-id: bot@sinoru.io
         apple-id-password: ${{ secrets.APPLE_ID_PASSWORD }}
+    - name: Resolve Package Dependencies
+      run: xcodebuild -resolvePackageDependencies
     - name: Analyze
       run: xcodebuild -scheme TwitterKit -destination '${{ matrix.xcode-destination }}' analyze
     - name: Test
