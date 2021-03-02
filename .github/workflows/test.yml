@@ -20,7 +20,7 @@ jobs:
     runs-on: ${{ matrix.operating-system }}
     steps:
       - uses: actions/checkout@v2
-      - uses: sinoru/actions-setup-swift@v1
+      - uses: sinoru/actions-setup-swift@v2
         with:
           swift-version: ${{ matrix.swift-version }}
       - name: Build
