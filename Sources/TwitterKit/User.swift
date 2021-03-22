@@ -54,4 +54,60 @@ extension User {
                 )
             }
     }
+
+    public static func fetchFollowingUsers(forUserID userID: Int64, pageCount: Int? = nil, paginationToken: String? = nil, session: Session, completion: @escaping (Result<Pagination<User>, TwitterKitError>) -> Void) {
+        var parameters = [String: String]()
+        parameters["max_results"] = pageCount.flatMap { String($0) }
+        parameters["pagination_token"] = paginationToken
+        parameters["user.fields"] = "created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,withheld"
+
+        session.alamofireSession
+            .request(
+                "https://api.twitter.com/2/users/\(userID)/following",
+                method: .get,
+                parameters: parameters,
+                encoding: URLEncoding(),
+                interceptor: session.oauth1AuthenticationInterceptor
+            )
+            .validate(statusCode: 200..<300)
+            .responseDecodable(
+                of: TwitterV2Response<[User]>.self,
+                queue: session.mainQueue,
+                decoder: JSONDecoder.twtk_default
+            ) { response in
+                completion(
+                    response.result
+                        .mapError { .request($0) }
+                        .map { Pagination($0) }
+                )
+            }
+    }
+
+    public static func fetchFollowerUsers(forUserID userID: Int64, pageCount: Int? = nil, paginationToken: String? = nil, session: Session, completion: @escaping (Result<Pagination<User>, TwitterKitError>) -> Void) {
+        var parameters = [String: String]()
+        parameters["max_results"] = pageCount.flatMap { String($0) }
+        parameters["pagination_token"] = paginationToken
+        parameters["user.fields"] = "created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,withheld"
+
+        session.alamofireSession
+            .request(
+                "https://api.twitter.com/2/users/\(userID)/followers",
+                method: .get,
+                parameters: parameters,
+                encoding: URLEncoding(),
+                interceptor: session.oauth1AuthenticationInterceptor
+            )
+            .validate(statusCode: 200..<300)
+            .responseDecodable(
+                of: TwitterV2Response<[User]>.self,
+                queue: session.mainQueue,
+                decoder: JSONDecoder.twtk_default
+            ) { response in
+                completion(
+                    response.result
+                        .mapError { .request($0) }
+                        .map { Pagination($0) }
+                )
+            }
+    }
 }

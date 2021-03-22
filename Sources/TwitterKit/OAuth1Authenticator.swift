@@ -130,7 +130,8 @@ public class OAuth1Authenticator {
             }
         }
 
-        let oauthSignatureParameterString = (bodyQueryItems + urlQueryItems + oauthQueryItems)
+        let oauthSignatureParameters = bodyQueryItems + urlQueryItems + oauthQueryItems
+        let oauthSignatureParametersString = oauthSignatureParameters
             .sorted(by: {
                 if $0.name == $1.name {
                     return $0.value ?? "" < $1.value ?? ""
@@ -145,7 +146,7 @@ public class OAuth1Authenticator {
         let oauthSignatureBaseString = [
             "\((urlRequest.httpMethod ?? "GET").uppercased())",
             urlComponents?.url?.absoluteString.addingPercentEncoding(withAllowedCharacters: .twtk_rfc3986Allowed),
-            oauthSignatureParameterString.addingPercentEncoding(withAllowedCharacters: .twtk_rfc3986Allowed)
+            oauthSignatureParametersString.addingPercentEncoding(withAllowedCharacters: .twtk_rfc3986Allowed)
         ].compactMap { $0 }.joined(separator: "&")
 
         let oauthSigningKey = [
