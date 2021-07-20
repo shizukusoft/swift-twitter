@@ -39,61 +39,6 @@ public class OAuth1Authenticator {
         self.session = session
     }
 
-    public func fetchRequestToken(callback: String, completion: @escaping (Result<TokenResponse, TwitterKitError>) -> Void) {
-        guard let session = session else { completion(.failure(.unknown)); return; }
-
-        var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/oauth/request_token")!)
-        urlRequest.method = .post
-
-        apply(additionalOAuthParameters: ["oauth_callback": callback], to: &urlRequest)
-
-        session.alamofireSession
-            .request(urlRequest)
-            .validate(statusCode: 200..<300)
-            .responseString(queue: session.mainQueue) { response in
-                completion(
-                    response.result
-                        .mapError { .request($0) }
-                        .flatMap {
-                            guard let token = TokenResponse(response: $0) else {
-                                return .failure(.unknown)
-                            }
-
-                            return .success(token)
-                        }
-                )
-            }
-    }
-
-    public func fetchAccessToken(token: String, verifier: String, completion: @escaping (Result<TokenResponse, TwitterKitError>) -> Void) {
-        guard let session = session else { completion(.failure(.unknown)); return; }
-
-        var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/oauth/access_token")!)
-        urlRequest.method = .post
-
-        apply(additionalOAuthParameters: [
-            "oauth_verifier": verifier,
-            "oauth_token": token
-        ], to: &urlRequest)
-
-        session.alamofireSession
-            .request(urlRequest)
-            .validate(statusCode: 200..<300)
-            .responseString(queue: session.mainQueue) { response in
-                completion(
-                    response.result
-                        .mapError { .request($0) }
-                        .flatMap {
-                            guard let token = TokenResponse(response: $0) else {
-                                return .failure(.unknown)
-                            }
-
-                            return .success(token)
-                        }
-                )
-            }
-    }
-
     func apply(
         credential: OAuth1Credential? = nil,
         nonce: String = UUID().uuidString,
@@ -173,6 +118,67 @@ public class OAuth1Authenticator {
             .joined(separator: ",")
 
         urlRequest.headers.add(.authorization(oauthAuthorization))
+    }
+}
+
+extension OAuth1Authenticator {
+    public func fetchRequestToken(callback: String) async throws -> OAuth1Authenticator.TokenResponse {
+        guard let session = session else { throw TwitterKitError.unknown; }
+
+        return try await withCheckedThrowingContinuation { continuation in
+            var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/oauth/request_token")!)
+            urlRequest.method = .post
+
+            apply(additionalOAuthParameters: ["oauth_callback": callback], to: &urlRequest)
+
+            session.alamofireSession
+                .request(urlRequest)
+                .validate(statusCode: 200..<300)
+                .responseString(queue: session.mainQueue) { response in
+                    continuation.resume(
+                        with: response.result
+                            .mapError { TwitterKitError.request($0) }
+                            .flatMap {
+                                guard let token = TokenResponse(response: $0) else {
+                                    return .failure(TwitterKitError.unknown)
+                                }
+
+                                return .success(token)
+                            }
+                    )
+                }
+        }
+    }
+
+    public func fetchAccessToken(token: String, verifier: String) async throws -> OAuth1Authenticator.TokenResponse {
+        guard let session = session else { throw TwitterKitError.unknown; }
+
+        return try await withCheckedThrowingContinuation { continuation in
+            var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/oauth/access_token")!)
+            urlRequest.method = .post
+
+            apply(additionalOAuthParameters: [
+                "oauth_verifier": verifier,
+                "oauth_token": token
+            ], to: &urlRequest)
+
+            session.alamofireSession
+                .request(urlRequest)
+                .validate(statusCode: 200..<300)
+                .responseString(queue: session.mainQueue) { response in
+                    continuation.resume(
+                        with: response.result
+                            .mapError { TwitterKitError.request($0) }
+                            .flatMap {
+                                guard let token = TokenResponse(response: $0) else {
+                                    return .failure(TwitterKitError.unknown)
+                                }
+
+                                return .success(token)
+                            }
+                    )
+                }
+        }
     }
 }
 

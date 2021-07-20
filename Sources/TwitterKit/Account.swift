@@ -20,18 +20,20 @@ public struct Account: Decodable, Identifiable {
 }
 
 extension Account {
-    public static func fetchMe(session: Session, completion: @escaping (Result<Account, TwitterKitError>) -> Void) {
-        session.alamofireSession
-            .request("https://api.twitter.com/1.1/account/verify_credentials.json", method: .get, interceptor: session.oauth1AuthenticationInterceptor)
-            .validate(statusCode: 200..<300)
-            .responseDecodable(
-                of: Account.self,
-                queue: session.mainQueue
-            ) { response in
-                completion(
-                    response.result
-                        .mapError { .request($0) }
-                )
-            }
+    public static func fetchMe(session: Session) async throws -> Account {
+        try await withCheckedThrowingContinuation { continuation in
+            session.alamofireSession
+                .request("https://api.twitter.com/1.1/account/verify_credentials.json", method: .get, interceptor: session.oauth1AuthenticationInterceptor)
+                .validate(statusCode: 200..<300)
+                .responseDecodable(
+                    of: Account.self,
+                    queue: session.mainQueue
+                ) { response in
+                    continuation.resume(
+                        with: response.result
+                            .mapError { TwitterKitError.request($0) }
+                    )
+                }
+        }
     }
 }

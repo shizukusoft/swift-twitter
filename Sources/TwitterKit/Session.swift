@@ -8,22 +8,40 @@
 import Foundation
 import Alamofire
 
-public class Session {
+open class Session {
     public let consumerKey: String
     let consumerSecret: String
 
-    public let globalQueue: DispatchQueue
-    public let mainQueue: DispatchQueue
+    open private(set) lazy var globalQueue = DispatchQueue(
+        label: "\(String(reflecting: self)).0x\(String(UInt(bitPattern: ObjectIdentifier(self)), radix: 16))",
+        qos: .default,
+        attributes: .concurrent
+    )
 
-    public private(set) lazy var alamofireSession = Alamofire.Session(
+    open private(set) lazy var requestOperationQueue: OperationQueue = {
+        let operationQueue = OperationQueue()
+        operationQueue.name = "\(String(reflecting: self)).0x\(String(UInt(bitPattern: ObjectIdentifier(self)), radix: 16)).request"
+        operationQueue.underlyingQueue = globalQueue
+        operationQueue.maxConcurrentOperationCount = 1
+
+        return operationQueue
+    }()
+
+    open private(set) lazy var mainQueue = DispatchQueue(
+        label: "\(String(reflecting: self)).0x\(String(UInt(bitPattern: ObjectIdentifier(self)), radix: 16)).main",
+        qos: .default,
+        target: globalQueue
+    )
+
+    open private(set) lazy var alamofireSession = Alamofire.Session(
         configuration: URLSessionConfiguration.twtk_default,
         rootQueue: mainQueue,
         requestQueue: globalQueue,
         serializationQueue: globalQueue
     )
 
-    public private(set) lazy var oauth1Authenticator = OAuth1Authenticator(session: self)
-    public var oauth1Credential: OAuth1Credential? {
+    open private(set) lazy var oauth1Authenticator = OAuth1Authenticator(session: self)
+    open var oauth1Credential: OAuth1Credential? {
         get { oauth1AuthenticationInterceptor.credential }
         set { oauth1AuthenticationInterceptor.credential = newValue }
     }
@@ -32,11 +50,5 @@ public class Session {
     public init(consumerKey: String, consumerSecret: String) {
         self.consumerKey = consumerKey
         self.consumerSecret = consumerSecret
-
-        let globalQueue = DispatchQueue(label: "\(String(reflecting: Session.self))", qos: .default, attributes: .concurrent)
-        let mainQueue = DispatchQueue(label: "\(String(reflecting: Session.self)).main", qos: .default, target: globalQueue)
-
-        self.globalQueue = globalQueue
-        self.mainQueue = mainQueue
     }
 }
