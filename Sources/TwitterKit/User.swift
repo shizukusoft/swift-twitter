@@ -30,8 +30,8 @@ public struct User: Decodable, Identifiable {
 }
 
 extension User {
-    public static func fetchUser(id: Int64, session: Session) async throws -> User {
-        try await withCheckedThrowingContinuation { continuation in
+    public init(id: Int64, session: Session) async throws {
+        self = try await withCheckedThrowingContinuation { continuation in
             session.alamofireSession
                 .request(
                     "https://api.twitter.com/2/users/\(id)",
@@ -56,8 +56,10 @@ extension User {
                 }
         }
     }
+}
 
-    public static func fetchFollowingUsers(forUserID userID: Int64, pageCount: Int? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
+extension User {
+    public static func followings(forUserID userID: Int64, pageCount: Int? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
         try await withCheckedThrowingContinuation { continuation in
             var parameters = [String: String]()
             parameters["max_results"] = pageCount.flatMap { String($0) }
@@ -87,7 +89,7 @@ extension User {
         }
     }
 
-    public static func fetchFollowerUsers(forUserID userID: Int64, pageCount: Int? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
+    public static func followers(forUserID userID: Int64, pageCount: Int? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
         try await withCheckedThrowingContinuation { continuation in
             var parameters = [String: String]()
             parameters["max_results"] = pageCount.flatMap { String($0) }

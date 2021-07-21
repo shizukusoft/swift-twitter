@@ -18,15 +18,6 @@ open class Session {
         attributes: .concurrent
     )
 
-    open private(set) lazy var requestOperationQueue: OperationQueue = {
-        let operationQueue = OperationQueue()
-        operationQueue.name = "\(String(reflecting: self)).0x\(String(UInt(bitPattern: ObjectIdentifier(self)), radix: 16)).request"
-        operationQueue.underlyingQueue = globalQueue
-        operationQueue.maxConcurrentOperationCount = 1
-
-        return operationQueue
-    }()
-
     open private(set) lazy var mainQueue = DispatchQueue(
         label: "\(String(reflecting: self)).0x\(String(UInt(bitPattern: ObjectIdentifier(self)), radix: 16)).main",
         qos: .default,
