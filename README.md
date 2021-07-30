@@ -1,5 +1,5 @@
-# TwitterKit.swift
+# swift-twitter
 
-[![Test](https://github.com/TweetNest/TwitterKit.swift/actions/workflows/test.yml/badge.svg)](https://github.com/TweetNest/TwitterKit.swift/actions/workflows/test.yml)
+[![Test](https://github.com/TweetNest/swift-twitter/actions/workflows/test.yml/badge.svg)](https://github.com/TweetNest/swift-twitter/actions/workflows/test.yml)
 
-TwitterKit is twitter library for Swift.
+swift-twitter is twitter library for Swift.
