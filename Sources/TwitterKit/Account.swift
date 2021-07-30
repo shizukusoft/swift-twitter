@@ -21,19 +21,20 @@ public struct Account: Decodable, Identifiable {
 
 extension Account {
     public static func me(session: Session) async throws -> Account {
-        try await withCheckedThrowingContinuation { continuation in
-            session.alamofireSession
-                .request("https://api.twitter.com/1.1/account/verify_credentials.json", method: .get, interceptor: session.oauth1AuthenticationInterceptor)
-                .validate(statusCode: 200..<300)
-                .responseDecodable(
-                    of: Account.self,
-                    queue: session.mainQueue
-                ) { response in
-                    continuation.resume(
-                        with: response.result
-                            .mapError { TwitterKitError.request($0) }
-                    )
-                }
-        }
+        try await Task {
+            var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/1.1/account/verify_credentials.json")!)
+            urlRequest.method = .get
+            await urlRequest.oauthSign(session: session)
+
+            let (data, response) = try await session.urlSession.data(for: urlRequest)
+            guard
+                let httpResponse = response as? HTTPURLResponse,
+                (200..<300).contains(httpResponse.statusCode)
+            else {
+                throw SessionError.invalidServerResponse
+            }
+
+            return try JSONDecoder().decode(Account.self, from: data)
+        }.value
     }
 }
