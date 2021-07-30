@@ -6,40 +6,36 @@
 //
 
 import Foundation
-import Alamofire
 
-open class Session {
+public actor Session {
     public let consumerKey: String
-    let consumerSecret: String
+    public let consumerSecret: String
+    public var credential: Credential?
 
-    open private(set) lazy var globalQueue = DispatchQueue(
-        label: "\(String(reflecting: self)).0x\(String(UInt(bitPattern: ObjectIdentifier(self)), radix: 16))",
-        qos: .default,
-        attributes: .concurrent
-    )
+    let delegate: Delegate
 
-    open private(set) lazy var mainQueue = DispatchQueue(
+    private(set) lazy var mainQueue = DispatchQueue(
         label: "\(String(reflecting: self)).0x\(String(UInt(bitPattern: ObjectIdentifier(self)), radix: 16)).main",
-        qos: .default,
-        target: globalQueue
+        qos: .default
     )
 
-    open private(set) lazy var alamofireSession = Alamofire.Session(
-        configuration: URLSessionConfiguration.twtk_default,
-        rootQueue: mainQueue,
-        requestQueue: globalQueue,
-        serializationQueue: globalQueue
-    )
+    private(set) lazy var mainOperationQueue: OperationQueue = {
+        let operationQueue = OperationQueue()
+        operationQueue.underlyingQueue = self.mainQueue
+        operationQueue.name = "\(String(reflecting: self)).0x\(String(UInt(bitPattern: ObjectIdentifier(self)), radix: 16)).main"
 
-    open private(set) lazy var oauth1Authenticator = OAuth1Authenticator(session: self)
-    open var oauth1Credential: OAuth1Credential? {
-        get { oauth1AuthenticationInterceptor.credential }
-        set { oauth1AuthenticationInterceptor.credential = newValue }
-    }
-    private(set) lazy var oauth1AuthenticationInterceptor = AuthenticationInterceptor(authenticator: oauth1Authenticator)
+        return operationQueue
+    }()
 
-    public init(consumerKey: String, consumerSecret: String) {
+    private(set) lazy var urlSession = URLSession(configuration: .twtk_default, delegate: delegate, delegateQueue: mainOperationQueue)
+
+    public init(consumerKey: String, consumerSecret: String, delegate: Delegate = Delegate()) {
         self.consumerKey = consumerKey
         self.consumerSecret = consumerSecret
+        self.delegate = delegate
+    }
+
+    public func updateCredential(_ credential: Credential) {
+        self.credential = credential
     }
 }

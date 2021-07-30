@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Alamofire
 
 public struct User: Decodable, Identifiable {
     public let id: String
@@ -31,91 +30,71 @@ public struct User: Decodable, Identifiable {
 
 extension User {
     public init(id: Int64, session: Session) async throws {
-        self = try await withCheckedThrowingContinuation { continuation in
-            session.alamofireSession
-                .request(
-                    "https://api.twitter.com/2/users/\(id)",
-                    method: .get,
-                    parameters: [
-                        "user.fields": "created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,withheld",
-                    ],
-                    encoding: URLEncoding(),
-                    interceptor: session.oauth1AuthenticationInterceptor
-                )
-                .validate(statusCode: 200..<300)
-                .responseDecodable(
-                    of: TwitterV2Response<User>.self,
-                    queue: session.mainQueue,
-                    decoder: JSONDecoder.twtk_default
-                ) { response in
-                    continuation.resume(
-                        with: response.result
-                            .mapError { TwitterKitError.request($0) }
-                            .map { $0.data }
-                    )
-                }
-        }
+        self = try await Task {
+            var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/2/users/\(id)")!)
+            urlRequest.httpMethod = "GET"
+            urlRequest.urlComponents?.queryItems = [
+                URLQueryItem(name: "user.fields", value: "created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,withheld")
+            ]
+            await urlRequest.oauthSign(session: session)
+
+            let (data, response) = try await session.urlSession.data(for: urlRequest)
+            guard
+                let httpResponse = response as? HTTPURLResponse,
+                (200..<300).contains(httpResponse.statusCode)
+            else {
+                throw SessionError.invalidServerResponse
+            }
+
+            return try JSONDecoder().decode(TwitterV2Response<User>.self, from: data).data
+        }.value
     }
 }
 
 extension User {
     public static func followings(forUserID userID: Int64, pageCount: Int? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
-        try await withCheckedThrowingContinuation { continuation in
-            var parameters = [String: String]()
-            parameters["max_results"] = pageCount.flatMap { String($0) }
-            parameters["pagination_token"] = paginationToken
-            parameters["user.fields"] = "created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,withheld"
+        try await Task {
+            var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/2/users/\(userID)/following")!)
+            urlRequest.httpMethod = "GET"
+            urlRequest.urlComponents?.queryItems = [
+                pageCount.flatMap { URLQueryItem(name: "max_results", value: String($0)) },
+                paginationToken.flatMap { URLQueryItem(name: "pagination_token", value: $0) },
+                URLQueryItem(name: "user.fields", value: "created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,withheld")
+            ].compactMap({$0})
+            await urlRequest.oauthSign(session: session)
 
-            session.alamofireSession
-                .request(
-                    "https://api.twitter.com/2/users/\(userID)/following",
-                    method: .get,
-                    parameters: parameters,
-                    encoding: URLEncoding(),
-                    interceptor: session.oauth1AuthenticationInterceptor
-                )
-                .validate(statusCode: 200..<300)
-                .responseDecodable(
-                    of: TwitterV2Response<[User]>.self,
-                    queue: session.mainQueue,
-                    decoder: JSONDecoder.twtk_default
-                ) { response in
-                    continuation.resume(
-                        with: response.result
-                            .mapError { TwitterKitError.request($0) }
-                            .map { Pagination($0) }
-                    )
-                }
-        }
+            let (data, response) = try await session.urlSession.data(for: urlRequest)
+            guard
+                let httpResponse = response as? HTTPURLResponse,
+                (200..<300).contains(httpResponse.statusCode)
+            else {
+                throw SessionError.invalidServerResponse
+            }
+
+            return Pagination(try JSONDecoder().decode(TwitterV2Response<[User]>.self, from: data))
+        }.value
     }
 
     public static func followers(forUserID userID: Int64, pageCount: Int? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
-        try await withCheckedThrowingContinuation { continuation in
-            var parameters = [String: String]()
-            parameters["max_results"] = pageCount.flatMap { String($0) }
-            parameters["pagination_token"] = paginationToken
-            parameters["user.fields"] = "created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,withheld"
+        try await Task {
+            var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/2/users/\(userID)/followers")!)
+            urlRequest.httpMethod = "GET"
+            urlRequest.urlComponents?.queryItems = [
+                pageCount.flatMap { URLQueryItem(name: "max_results", value: String($0)) },
+                paginationToken.flatMap { URLQueryItem(name: "pagination_token", value: $0) },
+                URLQueryItem(name: "user.fields", value: "created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,withheld")
+            ].compactMap({$0})
+            await urlRequest.oauthSign(session: session)
 
-            session.alamofireSession
-                .request(
-                    "https://api.twitter.com/2/users/\(userID)/followers",
-                    method: .get,
-                    parameters: parameters,
-                    encoding: URLEncoding(),
-                    interceptor: session.oauth1AuthenticationInterceptor
-                )
-                .validate(statusCode: 200..<300)
-                .responseDecodable(
-                    of: TwitterV2Response<[User]>.self,
-                    queue: session.mainQueue,
-                    decoder: JSONDecoder.twtk_default
-                ) { response in
-                    continuation.resume(
-                        with: response.result
-                            .mapError { TwitterKitError.request($0) }
-                            .map { Pagination($0) }
-                    )
-                }
-        }
+            let (data, response) = try await session.urlSession.data(for: urlRequest)
+            guard
+                let httpResponse = response as? HTTPURLResponse,
+                (200..<300).contains(httpResponse.statusCode)
+            else {
+                throw SessionError.invalidServerResponse
+            }
+
+            return Pagination(try JSONDecoder().decode(TwitterV2Response<[User]>.self, from: data))
+        }.value
     }
 }
