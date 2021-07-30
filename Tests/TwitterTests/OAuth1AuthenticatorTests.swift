@@ -6,10 +6,10 @@
 //
 
 import XCTest
-@testable import TwitterKit
+@testable import Twitter
 
 final class OAuth1AuthenticatorTests: XCTestCase {
-    func testApply() {
+    func testApply() async {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct
         // results.
@@ -20,12 +20,12 @@ final class OAuth1AuthenticatorTests: XCTestCase {
         urlRequest.httpMethod = "POST"
         urlRequest.httpBody = "status=Hello%20Ladies%20%2b%20Gentlemen%2c%20a%20signed%20OAuth%20request%21".data(using: .utf8)
 
-        let credential = OAuth1Credential(token: "370773112-GmHxMAgYyLbNEtIKZeRNFsMKPR9EyMZeS9weJAEb", tokenSecret: "LswwdoUaIvS8ltyTt5jkRh4J50vUPVVHtR2YPi5kE")
+        await session.updateCredential(Session.Credential(token: "370773112-GmHxMAgYyLbNEtIKZeRNFsMKPR9EyMZeS9weJAEb", tokenSecret: "LswwdoUaIvS8ltyTt5jkRh4J50vUPVVHtR2YPi5kE"))
 
-        session.oauth1Authenticator.apply(credential: credential, nonce: "kYjzVBB8Y0ZFabxSWbWovY3uYSQ2pTgmZeNu2VS4cg", timestamp: 1318622958, to: &urlRequest)
+        await urlRequest.oauthSign(session: session, nonce: "kYjzVBB8Y0ZFabxSWbWovY3uYSQ2pTgmZeNu2VS4cg", timestamp: 1318622958)
 
         XCTAssertEqual(
-            urlRequest.headers.value(for: "Authorization"),
+            urlRequest.value(forHTTPHeaderField: "Authorization"),
             #"OAuth oauth_consumer_key="xvz1evFS4wEEPTGEFPHBog",oauth_nonce="kYjzVBB8Y0ZFabxSWbWovY3uYSQ2pTgmZeNu2VS4cg",oauth_signature="hCtSmYh%2BiHYCEqBWrE7C7hYmtUk%3D",oauth_signature_method="HMAC-SHA1",oauth_timestamp="1318622958",oauth_token="370773112-GmHxMAgYyLbNEtIKZeRNFsMKPR9EyMZeS9weJAEb",oauth_version="1.0""#
         )
     }
