@@ -107,7 +107,7 @@ extension URLRequest {
             .map { $0.joined(separator: "=") }
             .joined(separator: ",")
 
-        headers.add(.authorization(oauthAuthorization))
+        setValue(oauthAuthorization, forHTTPHeaderField: "Authorization")
     }
 
     func oauthSigned(
@@ -149,7 +149,7 @@ extension Session {
     public func fetchRequestToken(callback: String) async throws -> TokenResponse {
         try await Task { [self] in
             var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/oauth/request_token")!)
-            urlRequest.method = .post
+            urlRequest.httpMethod = "POST"
 
             await urlRequest.oauthSign(session: self, additionalOAuthParameters: ["oauth_callback": callback])
 
@@ -176,7 +176,7 @@ extension Session {
     public func fetchAccessToken(token: String, verifier: String) async throws -> TokenResponse {
         try await Task { [self] in
             var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/oauth/access_token")!)
-            urlRequest.method = .post
+            urlRequest.httpMethod = "POST"
 
             await urlRequest.oauthSign(session: self, additionalOAuthParameters: [
                 "oauth_verifier": verifier,

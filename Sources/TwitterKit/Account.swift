@@ -23,7 +23,7 @@ extension Account {
     public static func me(session: Session) async throws -> Account {
         try await Task {
             var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/1.1/account/verify_credentials.json")!)
-            urlRequest.method = .get
+            urlRequest.httpMethod = "GET"
             await urlRequest.oauthSign(session: session)
 
             let (data, response) = try await session.urlSession.data(for: urlRequest)

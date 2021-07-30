@@ -6,11 +6,10 @@
 //
 
 import Foundation
-import Alamofire
 
 extension URLSessionConfiguration {
     public static var twtk_default: URLSessionConfiguration {
-        let configuration = URLSessionConfiguration.af.default
+        let configuration = URLSessionConfiguration.default
         let ephemeral = URLSessionConfiguration.ephemeral
 
         configuration.httpCookieStorage = ephemeral.httpCookieStorage

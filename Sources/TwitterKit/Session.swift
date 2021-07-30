@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Alamofire
 
 public actor Session {
     public let consumerKey: String

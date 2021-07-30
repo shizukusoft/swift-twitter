@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Alamofire
 
 public struct User: Decodable, Identifiable {
     public let id: String
@@ -33,7 +32,7 @@ extension User {
     public init(id: Int64, session: Session) async throws {
         self = try await Task {
             var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/2/users/\(id)")!)
-            urlRequest.method = .post
+            urlRequest.httpMethod = "GET"
             urlRequest.urlComponents?.queryItems = [
                 URLQueryItem(name: "user.fields", value: "created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,withheld")
             ]
@@ -56,7 +55,7 @@ extension User {
     public static func followings(forUserID userID: Int64, pageCount: Int? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
         try await Task {
             var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/2/users/\(userID)/following")!)
-            urlRequest.method = .post
+            urlRequest.httpMethod = "GET"
             urlRequest.urlComponents?.queryItems = [
                 pageCount.flatMap { URLQueryItem(name: "max_results", value: String($0)) },
                 paginationToken.flatMap { URLQueryItem(name: "pagination_token", value: $0) },
@@ -79,7 +78,7 @@ extension User {
     public static func followers(forUserID userID: Int64, pageCount: Int? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
         try await Task {
             var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/2/users/\(userID)/followers")!)
-            urlRequest.method = .post
+            urlRequest.httpMethod = "GET"
             urlRequest.urlComponents?.queryItems = [
                 pageCount.flatMap { URLQueryItem(name: "max_results", value: String($0)) },
                 paginationToken.flatMap { URLQueryItem(name: "pagination_token", value: $0) },
