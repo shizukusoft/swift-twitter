@@ -9,7 +9,7 @@ import Foundation
 
 extension Session {
     open class Delegate: NSObject {
-
+        open internal(set) weak var session: Session?
     }
 }
 

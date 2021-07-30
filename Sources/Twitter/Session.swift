@@ -29,10 +29,11 @@ public actor Session {
 
     private(set) lazy var urlSession = URLSession(configuration: .twtk_default, delegate: delegate, delegateQueue: mainOperationQueue)
 
-    public init(consumerKey: String, consumerSecret: String, delegate: Delegate = Delegate()) {
+    public init(consumerKey: String, consumerSecret: String, delegate: Delegate = Delegate()) async {
         self.consumerKey = consumerKey
         self.consumerSecret = consumerSecret
         self.delegate = delegate
+        self.delegate.session = self
     }
 
     public func updateCredential(_ credential: Credential) {
