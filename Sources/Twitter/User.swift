@@ -8,7 +8,7 @@
 import Foundation
 
 public struct User: Decodable, Identifiable {
-    public let id: String
+    public let id: Int64
     public let name: String
     public let username: String
 
@@ -52,7 +52,7 @@ extension User {
 }
 
 extension User {
-    public static func followings(forUserID userID: Int64, pageCount: Int? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
+    public static func followings(forUserID userID: User.ID, pageCount: Int? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
         try await Task {
             var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/2/users/\(userID)/following")!)
             urlRequest.httpMethod = "GET"
@@ -75,7 +75,13 @@ extension User {
         }.value
     }
 
-    public static func followers(forUserID userID: Int64, pageCount: Int? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
+    public func followings(pageCount: Int? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
+        try await Self.followings(forUserID: id, pageCount: pageCount, paginationToken: paginationToken, session: session)
+    }
+}
+
+extension User {
+    public static func followers(forUserID userID: User.ID, pageCount: Int? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
         try await Task {
             var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/2/users/\(userID)/followers")!)
             urlRequest.httpMethod = "GET"
@@ -96,5 +102,9 @@ extension User {
 
             return Pagination(try JSONDecoder().decode(TwitterV2Response<[User]>.self, from: data))
         }.value
+    }
+
+    public func followers(pageCount: Int? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
+        try await Self.followers(forUserID: id, pageCount: pageCount, paginationToken: paginationToken, session: session)
     }
 }
