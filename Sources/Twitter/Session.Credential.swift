@@ -11,7 +11,7 @@ import CommonCrypto
 extension Session {
     public struct Credential {
         public let token: String
-        let tokenSecret: String
+        public let tokenSecret: String
 
         public init(token: String, tokenSecret: String) {
             self.token = token
