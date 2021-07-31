@@ -46,7 +46,7 @@ extension User {
                 throw SessionError.invalidServerResponse
             }
 
-            return try JSONDecoder().decode(TwitterV2Response<User>.self, from: data).data
+            return try JSONDecoder.twtk_default.decode(TwitterV2Response<User>.self, from: data).data
         }.value
     }
 }
@@ -71,7 +71,7 @@ extension User {
                 throw SessionError.invalidServerResponse
             }
 
-            return Pagination(try JSONDecoder().decode(TwitterV2Response<[User]>.self, from: data))
+            return Pagination(try JSONDecoder.twtk_default.decode(TwitterV2Response<[User]>.self, from: data))
         }.value
     }
 
@@ -100,7 +100,7 @@ extension User {
                 throw SessionError.invalidServerResponse
             }
 
-            return Pagination(try JSONDecoder().decode(TwitterV2Response<[User]>.self, from: data))
+            return Pagination(try JSONDecoder.twtk_default.decode(TwitterV2Response<[User]>.self, from: data))
         }.value
     }
 
