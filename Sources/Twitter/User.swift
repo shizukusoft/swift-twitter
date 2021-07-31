@@ -8,7 +8,7 @@
 import Foundation
 
 public struct User: Decodable, Identifiable {
-    public let id: Int64
+    public let id: String
     public let name: String
     public let username: String
 
@@ -29,7 +29,7 @@ public struct User: Decodable, Identifiable {
 }
 
 extension User {
-    public init(id: Int64, session: Session) async throws {
+    public init(id: User.ID, session: Session) async throws {
         self = try await Task {
             var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/2/users/\(id)")!)
             urlRequest.httpMethod = "GET"
