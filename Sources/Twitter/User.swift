@@ -52,7 +52,7 @@ extension User {
 }
 
 extension User {
-    public static func followings(forUserID userID: User.ID, pageCount: Int? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
+    public static func followings(forUserID userID: User.ID, pageCount: Int16? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
         try await Task {
             var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/2/users/\(userID)/following")!)
             urlRequest.httpMethod = "GET"
@@ -75,13 +75,32 @@ extension User {
         }.value
     }
 
-    public func followings(pageCount: Int? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
+    public static func followings(forUserID userID: User.ID, session: Session) async throws -> [User] {
+        func followings(paginationToken: String?, previousPages: [Pagination<User>]) async throws -> [Pagination<User>] {
+            let page = try await self.followings(forUserID: userID, pageCount: 1000, paginationToken: paginationToken, session: session)
+
+            if let paginationToken = page.nextToken {
+                return try await followings(paginationToken: paginationToken, previousPages: previousPages + [page])
+            } else {
+                return previousPages + [page]
+            }
+        }
+
+        return try await followings(paginationToken: nil, previousPages: [])
+            .flatMap { $0.paginatedItems }
+    }
+
+    public func followings(pageCount: Int16? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
         try await Self.followings(forUserID: id, pageCount: pageCount, paginationToken: paginationToken, session: session)
+    }
+
+    public func followings(session: Session) async throws -> [User] {
+        try await Self.followings(forUserID: id, session: session)
     }
 }
 
 extension User {
-    public static func followers(forUserID userID: User.ID, pageCount: Int? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
+    public static func followers(forUserID userID: User.ID, pageCount: Int16? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
         try await Task {
             var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/2/users/\(userID)/followers")!)
             urlRequest.httpMethod = "GET"
@@ -104,7 +123,26 @@ extension User {
         }.value
     }
 
-    public func followers(pageCount: Int? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
+    public static func followers(forUserID userID: User.ID, session: Session) async throws -> [User] {
+        func followers(paginationToken: String?, previousPages: [Pagination<User>]) async throws -> [Pagination<User>] {
+            let page = try await self.followers(forUserID: userID, pageCount: 1000, paginationToken: paginationToken, session: session)
+
+            if let paginationToken = page.nextToken {
+                return try await followers(paginationToken: paginationToken, previousPages: previousPages + [page])
+            } else {
+                return previousPages + [page]
+            }
+        }
+
+        return try await followers(paginationToken: nil, previousPages: [])
+            .flatMap { $0.paginatedItems }
+    }
+
+    public func followers(pageCount: Int16? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
         try await Self.followers(forUserID: id, pageCount: pageCount, paginationToken: paginationToken, session: session)
+    }
+
+    public func followers(session: Session) async throws -> [User] {
+        try await Self.followers(forUserID: id, session: session)
     }
 }
