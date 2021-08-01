@@ -29,6 +29,14 @@ public struct User: Decodable, Identifiable {
 }
 
 extension User {
+    public var profileImageOriginalURL: URL {
+        return profileImageURL
+            .deletingLastPathComponent()
+            .appendingPathComponent(profileImageURL.lastPathComponent.replacingOccurrences(of: "_normal.", with: "."))
+    }
+}
+
+extension User {
     public init(id: User.ID, session: Session) async throws {
         self = try await Task {
             var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/2/users/\(id)")!)
