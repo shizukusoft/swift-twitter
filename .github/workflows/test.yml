@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        operating-system: [macos-11.0]
+        operating-system: [macos-11]
         swift-version: ["5.5"]
     runs-on: ${{ matrix.operating-system }}
     steps:
