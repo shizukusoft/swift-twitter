@@ -11,39 +11,39 @@ on:
       - '**/*.swift'
 
 jobs:
-  swift-test:
-    strategy:
-      fail-fast: false
-      matrix:
-        operating-system: [macos-11]
-        swift-version: ["5.5"]
-    runs-on: ${{ matrix.operating-system }}
-    steps:
-      - uses: actions/checkout@v2
-      - uses: sinoru/actions-setup-swift@v2
-        with:
-          swift-version: ${{ matrix.swift-version }}
-      - name: Build
-        run: swift build -v
-        env:
-          SWIFT_VERSION: ${{ matrix.swift-version }}
-      - name: Run tests
-        run: swift test -v
-        env:
-          SWIFT_VERSION: ${{ matrix.swift-version }}
+  # swift-test:
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       operating-system: [macos-11]
+  #       swift-version: ["5.5"]
+  #   runs-on: ${{ matrix.operating-system }}
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - uses: sinoru/actions-setup-swift@v2
+  #       with:
+  #         swift-version: ${{ matrix.swift-version }}
+  #     - name: Build
+  #       run: swift build -v
+  #       env:
+  #         SWIFT_VERSION: ${{ matrix.swift-version }}
+  #     - name: Run tests
+  #       run: swift test -v
+  #       env:
+  #         SWIFT_VERSION: ${{ matrix.swift-version }}
   xcode-test:
     strategy:
       fail-fast: false
       matrix:
         xcode-version: ["13.0-beta.4"]
         xcode-destination: [
-          "platform=OS X,arch=x86_64",
-          "platform=OS X,arch=x86_64,variant=Mac Catalyst",
-          "platform=iOS Simulator,name=iPhone 11 Pro,OS=latest",
+          # "platform=OS X,arch=x86_64",
+          # "platform=OS X,arch=x86_64,variant=Mac Catalyst",
+          "platform=iOS Simulator,name=iPhone 12 Pro,OS=latest",
           "platform=tvOS Simulator,name=Apple TV 4K,OS=latest",
           "platform=watchOS Simulator,name=Apple Watch Series 6 - 44mm,OS=latest",
         ]
-    runs-on: macos-11.0
+    runs-on: macos-11
     steps:
       - uses: actions/checkout@v2
       - uses: sinoru/actions-setup-xcode@v2
@@ -54,6 +54,6 @@ jobs:
       - name: Resolve Package Dependencies
         run: xcodebuild -resolvePackageDependencies
       - name: Analyze
-        run: xcodebuild -scheme TwitterKit -destination '${{ matrix.xcode-destination }}' analyze
+        run: xcodebuild -scheme Twitter -destination '${{ matrix.xcode-destination }}' analyze
       - name: Test
-        run: xcodebuild -scheme TwitterKit -destination '${{ matrix.xcode-destination }}' test
+        run: xcodebuild -scheme Twitter -destination '${{ matrix.xcode-destination }}' test
