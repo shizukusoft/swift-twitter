@@ -35,7 +35,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        xcode-version: ["13 beta 3"]
+        xcode-version: ["13 beta 4"]
         xcode-destination: [
           # "platform=OS X,arch=x86_64",
           # "platform=OS X,arch=x86_64,variant=Mac Catalyst",
