@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct User: Decodable, Identifiable {
+public struct User: Identifiable {
     public let id: String
     public let name: String
     public let username: String
@@ -16,15 +16,58 @@ public struct User: Decodable, Identifiable {
     public let verified: Bool
 
     public let description: String
+    public let descriptionEntities: Entities
+
+    public let url: URL?
+    public let urlEntities: Entities
+
+    public let location: String?
 
     public let createdAt: Date
 
     public let profileImageURL: URL
+}
+
+extension User: Decodable {
+    private struct UserEntities: Decodable {
+        let url: Entities?
+        let description: Entities?
+    }
 
     enum CodingKeys: String, CodingKey {
-        case id, name, username, protected, verified, description
+        case id, name, username, protected, verified, description, url, location
+        case entities
         case createdAt = "created_at"
         case profileImageURL = "profile_image_url"
+    }
+
+    enum EntitiesCodingKeys: String, CodingKey {
+        case url
+        case description
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        self.id = try container.decode(String.self, forKey: .id)
+        self.name = try container.decode(String.self, forKey: .name)
+        self.username = try container.decode(String.self, forKey: .username)
+
+        self.protected = try container.decode(Bool.self, forKey: .protected)
+        self.verified = try container.decode(Bool.self, forKey: .verified)
+
+        self.description = try container.decode(String.self, forKey: .description)
+        self.url = try? container.decode(URL.self, forKey: .url)
+
+        let userEntities = try container.decodeIfPresent(UserEntities.self, forKey: .entities)
+        self.descriptionEntities = userEntities?.description ?? Entities(urls: [], mentions: [])
+        self.urlEntities = userEntities?.url ?? Entities(urls: [], mentions: [])
+
+        self.location = try container.decodeIfPresent(String.self, forKey: .location)
+
+        self.createdAt = try container.decode(Date.self, forKey: .createdAt)
+
+        self.profileImageURL = try container.decode(URL.self, forKey: .profileImageURL)
     }
 }
 
@@ -33,6 +76,49 @@ extension User {
         return profileImageURL
             .deletingLastPathComponent()
             .appendingPathComponent(profileImageURL.lastPathComponent.replacingOccurrences(of: "_normal.", with: "."))
+    }
+}
+
+extension User {
+    public var expandedURL: URL? {
+        return url.flatMap { url in
+            let urlEntities: [(range: Range<String.Index>, entity: URLEntity)] = urlEntities.urls
+                .compactMap {
+                    guard let range = Range<String.Index>(NSRange($0.range), in: url.absoluteString) else {
+                        return nil
+                    }
+
+                    return (range: range, entity: $0)
+                }
+
+            return URL(
+                string: urlEntities.reversed().reduce(into: url.absoluteString) {
+                    $0.replaceSubrange($1.range, with: $1.entity.expandedURL.absoluteString)
+                }
+            )
+        }
+    }
+
+    public var attributedDescription: AttributedString? {
+        var attributedDescription = AttributedString(description)
+
+        let descriptionURLEntities: [(range: Range<AttributedString.Index>, entity: URLEntity)] = descriptionEntities.urls
+            .compactMap {
+                guard let range = Range<AttributedString.Index>(NSRange($0.range), in: attributedDescription) else {
+                    return nil
+                }
+
+                return (range: range, entity: $0)
+            }
+
+        descriptionURLEntities.reversed().forEach {
+            var link = AttributedString($0.entity.displayURLString)
+            link[link.startIndex..<link.endIndex].link = $0.entity.expandedURL
+
+            attributedDescription.replaceSubrange($0.range, with: link)
+        }
+
+        return attributedDescription
     }
 }
 
