@@ -100,6 +100,14 @@ extension User {
     }
 
     public var attributedDescription: AttributedString? {
+        return attributedDescription {
+            var link = AttributedString($0.displayURLString)
+            link[link.startIndex..<link.endIndex].link = $0.expandedURL
+            return link
+        }
+    }
+
+    public func attributedDescription(_ urlEntityHandler: (URLEntity) -> AttributedString) -> AttributedString {
         var attributedDescription = AttributedString(description)
 
         let descriptionURLEntities: [(range: Range<AttributedString.Index>, entity: URLEntity)] = descriptionEntities.urls
@@ -112,10 +120,7 @@ extension User {
             }
 
         descriptionURLEntities.reversed().forEach {
-            var link = AttributedString($0.entity.displayURLString)
-            link[link.startIndex..<link.endIndex].link = $0.entity.expandedURL
-
-            attributedDescription.replaceSubrange($0.range, with: link)
+            attributedDescription.replaceSubrange($0.range, with: urlEntityHandler($0.entity))
         }
 
         return attributedDescription
