@@ -82,18 +82,13 @@ extension User {
 extension User {
     public var expandedURL: URL? {
         return url.flatMap { url in
-            let urlEntities: [(range: Range<String.Index>, entity: URLEntity)] = urlEntities.urls
-                .compactMap {
-                    guard let range = Range<String.Index>(NSRange($0.range), in: url.absoluteString) else {
-                        return nil
-                    }
-
-                    return (range: range, entity: $0)
-                }
+            let urlEntities = urlEntities.urls
 
             return URL(
-                string: urlEntities.reversed().reduce(into: url.absoluteString) {
-                    $0.replaceSubrange($1.range, with: $1.entity.expandedURL.absoluteString)
+                string: urlEntities.reduce(into: url.absoluteString) {
+                    if let range = $0.range(of: $1.url.absoluteString) {
+                        $0.replaceSubrange(range, with: $1.expandedURL.absoluteString)
+                    }
                 }
             )
         }
@@ -110,17 +105,10 @@ extension User {
     public func attributedDescription(_ urlEntityHandler: (URLEntity) -> AttributedString) -> AttributedString {
         var attributedDescription = AttributedString(description)
 
-        let descriptionURLEntities: [(range: Range<AttributedString.Index>, entity: URLEntity)] = descriptionEntities.urls
-            .compactMap {
-                guard let range = Range<AttributedString.Index>(NSRange($0.range), in: attributedDescription) else {
-                    return nil
-                }
-
-                return (range: range, entity: $0)
+        descriptionEntities.urls.forEach {
+            if let range = attributedDescription.range(of: $0.url.absoluteString) {
+                attributedDescription.replaceSubrange(range, with: urlEntityHandler($0))
             }
-
-        descriptionURLEntities.reversed().forEach {
-            attributedDescription.replaceSubrange($0.range, with: urlEntityHandler($0.entity))
         }
 
         return attributedDescription
