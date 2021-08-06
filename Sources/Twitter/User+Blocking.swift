@@ -8,7 +8,7 @@
 import Foundation
 
 extension User {
-    public static func blocking(forUserID userID: User.ID, pageCount: Int16? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
+    public static func blockingUsers(forUserID userID: User.ID, pageCount: Int16? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
         try await Task {
             var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/2/users/\(userID)/blocking")!)
             urlRequest.httpMethod = "GET"
@@ -32,26 +32,26 @@ extension User {
     }
 
 
-    public static func blocking(forUserID userID: User.ID, session: Session) async throws -> [User] {
-        func blocking(paginationToken: String?, previousPages: [Pagination<User>]) async throws -> [Pagination<User>] {
-            let page = try await self.blocking(forUserID: userID, pageCount: 1000, paginationToken: paginationToken, session: session)
+    public static func blockingUsers(forUserID userID: User.ID, session: Session) async throws -> [User] {
+        func blockingUsers(paginationToken: String?, previousPages: [Pagination<User>]) async throws -> [Pagination<User>] {
+            let page = try await self.blockingUsers(forUserID: userID, pageCount: 1000, paginationToken: paginationToken, session: session)
 
             if let paginationToken = page.nextToken {
-                return try await blocking(paginationToken: paginationToken, previousPages: previousPages + [page])
+                return try await blockingUsers(paginationToken: paginationToken, previousPages: previousPages + [page])
             } else {
                 return previousPages + [page]
             }
         }
 
-        return try await blocking(paginationToken: nil, previousPages: [])
+        return try await blockingUsers(paginationToken: nil, previousPages: [])
             .flatMap { $0.paginatedItems }
     }
 
-    public func blocking(pageCount: Int16? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
-        try await Self.blocking(forUserID: id, pageCount: pageCount, paginationToken: paginationToken, session: session)
+    public func blockingUsers(pageCount: Int16? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
+        try await Self.blockingUsers(forUserID: id, pageCount: pageCount, paginationToken: paginationToken, session: session)
     }
 
-    public func blocking(session: Session) async throws -> [User] {
-        try await Self.blocking(forUserID: id, session: session)
+    public func blockingUsers(session: Session) async throws -> [User] {
+        try await Self.blockingUsers(forUserID: id, session: session)
     }
 }
