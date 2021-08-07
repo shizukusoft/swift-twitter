@@ -148,7 +148,7 @@ extension Session {
 
     public func fetchRequestToken(callback: String) async throws -> TokenResponse {
         try await Task { [self] in
-            var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/oauth/request_token")!)
+            var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "oauth/request_token")!)
             urlRequest.httpMethod = "POST"
 
             await urlRequest.oauthSign(session: self, additionalOAuthParameters: ["oauth_callback": callback])
@@ -175,7 +175,7 @@ extension Session {
 
     public func fetchAccessToken(token: String, verifier: String) async throws -> TokenResponse {
         try await Task { [self] in
-            var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/oauth/access_token")!)
+            var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "oauth/access_token")!)
             urlRequest.httpMethod = "POST"
 
             await urlRequest.oauthSign(session: self, additionalOAuthParameters: [

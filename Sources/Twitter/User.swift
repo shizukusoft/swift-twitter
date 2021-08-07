@@ -118,7 +118,7 @@ extension User {
 extension User {
     public init(id: User.ID, session: Session) async throws {
         self = try await Task {
-            var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/2/users/\(id)")!)
+            var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "2/users/\(id)")!)
             urlRequest.httpMethod = "GET"
             urlRequest.urlComponents?.queryItems = [
                 URLQueryItem(name: "user.fields", value: "created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,withheld")

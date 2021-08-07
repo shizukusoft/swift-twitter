@@ -10,7 +10,7 @@ import Foundation
 extension User {
     public static func blockingUsers(forUserID userID: User.ID, pageCount: Int16? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
         try await Task {
-            var urlRequest = URLRequest(url: URL(string: "https://api.twitter.com/2/users/\(userID)/blocking")!)
+            var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "2/users/\(userID)/blocking")!)
             urlRequest.httpMethod = "GET"
             urlRequest.urlComponents?.queryItems = [
                 pageCount.flatMap { URLQueryItem(name: "max_results", value: String($0)) },
