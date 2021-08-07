@@ -26,6 +26,17 @@ public struct User: Identifiable {
     public let createdAt: Date
 
     public let profileImageURL: URL
+
+    public let publicMetrics: PublicMetrics
+}
+
+extension User {
+    public struct PublicMetrics {
+        public let followersCount: Int
+        public let followingUsersCount: Int
+        public let tweetsCount: Int
+        public let listedCount: Int
+    }
 }
 
 extension User: Decodable {
@@ -39,6 +50,7 @@ extension User: Decodable {
         case entities
         case createdAt = "created_at"
         case profileImageURL = "profile_image_url"
+        case publicMetrics = "public_metrics"
     }
 
     enum EntitiesCodingKeys: String, CodingKey {
@@ -68,6 +80,17 @@ extension User: Decodable {
         self.createdAt = try container.decode(Date.self, forKey: .createdAt)
 
         self.profileImageURL = try container.decode(URL.self, forKey: .profileImageURL)
+
+        self.publicMetrics = try container.decode(PublicMetrics.self, forKey: .publicMetrics)
+    }
+}
+
+extension User.PublicMetrics: Decodable {
+    enum CodingKeys: String, CodingKey {
+        case followersCount = "followers_count"
+        case followingUsersCount = "following_count"
+        case tweetsCount = "tweet_count"
+        case listedCount = "listed_count"
     }
 }
 
