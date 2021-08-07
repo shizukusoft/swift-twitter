@@ -7,8 +7,8 @@
 
 import Foundation
 
-public enum SessionError: Error {
+public enum TwitterError: Error {
     case unknown
-    case serverError(TwitterServerError?)
+    case serverError(urlResponse: URLResponse, serverError: TwitterServerError? = nil)
     case dataCorrupted
 }

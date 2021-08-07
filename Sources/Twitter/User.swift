@@ -130,7 +130,7 @@ extension User {
                 let httpResponse = response as? HTTPURLResponse,
                 (200..<300).contains(httpResponse.statusCode)
             else {
-                throw SessionError.serverError(try? JSONDecoder.twt_default.decode(TwitterServerError.self, from: data))
+                throw TwitterError.serverError(urlResponse: response, serverError: try? JSONDecoder.twt_default.decode(TwitterServerError.self, from: data))
             }
 
             return try JSONDecoder.twt_default.decode(TwitterServerResponseV2<User>.self, from: data).data.get()
