@@ -10,8 +10,8 @@ import Foundation
 public struct URLEntity: Entity {
     public let range: Range<Int>
     public let url: URL
-    public let expandedURL: URL
-    public let displayURLString: String
+    public let expandedURL: URL?
+    public let urlStringForDisplay: String?
 }
 
 extension URLEntity: Decodable {
@@ -20,7 +20,7 @@ extension URLEntity: Decodable {
         case end
         case url
         case expandedURL = "expanded_url"
-        case displayURLString = "display_url"
+        case urlStringForDisplay = "display_url"
     }
 
     public init(from decoder: Decoder) throws {
@@ -28,7 +28,7 @@ extension URLEntity: Decodable {
 
         self.range = try container.decode(Int.self, forKey: .start)..<container.decode(Int.self, forKey: .end)
         self.url = try container.decode(URL.self, forKey: .url)
-        self.expandedURL = try container.decode(URL.self, forKey: .expandedURL)
-        self.displayURLString = try container.decode(String.self, forKey: .displayURLString)
+        self.expandedURL = try container.decodeIfPresent(URL.self, forKey: .expandedURL)
+        self.urlStringForDisplay = try container.decodeIfPresent(String.self, forKey: .urlStringForDisplay)
     }
 }

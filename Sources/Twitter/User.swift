@@ -86,8 +86,8 @@ extension User {
 
             return URL(
                 string: urlEntities.reduce(into: url.absoluteString) {
-                    if let range = $0.range(of: $1.url.absoluteString) {
-                        $0.replaceSubrange(range, with: $1.expandedURL.absoluteString)
+                    if let range = $0.range(of: $1.url.absoluteString), let expandedURL = $1.expandedURL {
+                        $0.replaceSubrange(range, with: expandedURL.absoluteString)
                     }
                 }
             )
@@ -96,8 +96,8 @@ extension User {
 
     public var attributedDescription: AttributedString? {
         return attributedDescription {
-            var link = AttributedString($0.displayURLString)
-            link[link.startIndex..<link.endIndex].link = $0.expandedURL
+            var link = AttributedString($0.urlStringForDisplay ?? $0.url.absoluteString)
+            link[link.startIndex..<link.endIndex].link = $0.expandedURL ?? $0.url
             return link
         }
     }
