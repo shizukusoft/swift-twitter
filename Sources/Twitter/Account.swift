@@ -34,7 +34,7 @@ extension Account {
                 throw SessionError.invalidServerResponse
             }
 
-            return try JSONDecoder.twtk_default.decode(Account.self, from: data)
+            return try JSONDecoder.twt_default.decode(Account.self, from: data)
         }.value
     }
 }

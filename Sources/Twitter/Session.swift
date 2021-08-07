@@ -27,7 +27,7 @@ public actor Session {
         return operationQueue
     }()
 
-    private(set) lazy var urlSession = URLSession(configuration: .twtk_default, delegate: delegate, delegateQueue: mainOperationQueue)
+    private(set) lazy var urlSession = URLSession(configuration: .twt_default, delegate: delegate, delegateQueue: mainOperationQueue)
 
     public init(consumerKey: String, consumerSecret: String, delegate: Delegate = Delegate()) async {
         self.consumerKey = consumerKey

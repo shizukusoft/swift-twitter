@@ -27,7 +27,7 @@ extension User {
                 throw SessionError.invalidServerResponse
             }
 
-            return Pagination(try JSONDecoder.twtk_default.decode(TwitterV2Response<[User]>.self, from: data))
+            return Pagination(try JSONDecoder.twt_default.decode(TwitterV2Response<[User]>.self, from: data))
         }.value
     }
 

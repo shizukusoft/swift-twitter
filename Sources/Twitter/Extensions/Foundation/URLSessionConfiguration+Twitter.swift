@@ -1,5 +1,5 @@
 //
-//  Foundation.URLSessionConfiguration.swift
+//  URLSessionConfiguration+Twitter.swift
 //  
 //
 //  Created by Jaehong Kang on 2021/02/23.
@@ -8,7 +8,7 @@
 import Foundation
 
 extension URLSessionConfiguration {
-    public static var twtk_default: URLSessionConfiguration {
+    public static var twt_default: URLSessionConfiguration {
         let configuration = URLSessionConfiguration.default
         let ephemeral = URLSessionConfiguration.ephemeral
 

@@ -74,19 +74,19 @@ extension URLRequest {
                     return $0.name < $1.name
                 }
             })
-            .map { [$0.name, $0.value].compactMap { $0?.addingPercentEncoding(withAllowedCharacters: .twtk_rfc3986Allowed) } }
+            .map { [$0.name, $0.value].compactMap { $0?.addingPercentEncoding(withAllowedCharacters: .twt_rfc3986Allowed) } }
             .map { $0.joined(separator: "=") }
             .joined(separator: "&")
 
         let oauthSignatureBaseString = [
             "\((httpMethod ?? "GET").uppercased())",
-            urlComponents?.url?.absoluteString.addingPercentEncoding(withAllowedCharacters: .twtk_rfc3986Allowed),
-            oauthSignatureParametersString.addingPercentEncoding(withAllowedCharacters: .twtk_rfc3986Allowed)
+            urlComponents?.url?.absoluteString.addingPercentEncoding(withAllowedCharacters: .twt_rfc3986Allowed),
+            oauthSignatureParametersString.addingPercentEncoding(withAllowedCharacters: .twt_rfc3986Allowed)
         ].compactMap { $0 }.joined(separator: "&")
 
         let oauthSigningKey = [
-            consumerSecret.addingPercentEncoding(withAllowedCharacters: .twtk_rfc3986Allowed),
-            credential?.tokenSecret.addingPercentEncoding(withAllowedCharacters: .twtk_rfc3986Allowed) ?? ""
+            consumerSecret.addingPercentEncoding(withAllowedCharacters: .twt_rfc3986Allowed),
+            credential?.tokenSecret.addingPercentEncoding(withAllowedCharacters: .twt_rfc3986Allowed) ?? ""
         ].compactMap { $0 }.joined(separator: "&")
 
         var digest = [UInt8](repeating: 0, count: Int(CC_SHA1_DIGEST_LENGTH))
@@ -103,7 +103,7 @@ extension URLRequest {
                     return $0.name < $1.name
                 }
             })
-            .map { [$0.name.addingPercentEncoding(withAllowedCharacters: .twtk_rfc3986Allowed), $0.value?.addingPercentEncoding(withAllowedCharacters: .twtk_rfc3986Allowed).flatMap { "\"\($0)\"" }].compactMap { $0 } }
+            .map { [$0.name.addingPercentEncoding(withAllowedCharacters: .twt_rfc3986Allowed), $0.value?.addingPercentEncoding(withAllowedCharacters: .twt_rfc3986Allowed).flatMap { "\"\($0)\"" }].compactMap { $0 } }
             .map { $0.joined(separator: "=") }
             .joined(separator: ",")
 
