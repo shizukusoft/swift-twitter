@@ -1,15 +1,15 @@
 //
-//  TwitterV2Response.swift
-//  
+//  TwitterServerArrayResponseV2.swift
+//  swift-twitter
 //
-//  Created by Jaehong Kang on 2021/02/24.
+//  Created by Jaehong Kang on 2021/08/07.
 //
 
 import Foundation
 
-struct TwitterV2Response<T: Decodable>: Decodable {
+struct TwitterServerArrayResponseV2<Element>: Decodable where Element: Decodable {
     struct Meta: Decodable {
-        let resultCount: Int?
+        let resultCount: Int
 
         let previousToken: String?
         let nextToken: String?
@@ -21,6 +21,6 @@ struct TwitterV2Response<T: Decodable>: Decodable {
         }
     }
 
-    let data: T?
+    let data: [Result<Element, TwitterServerError>]?
     let meta: Meta?
 }

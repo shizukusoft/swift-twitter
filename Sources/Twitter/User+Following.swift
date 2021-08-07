@@ -8,7 +8,7 @@
 import Foundation
 
 extension User {
-    public static func followingUsers(forUserID userID: User.ID, pageCount: Int16? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
+    public static func followingUsers(forUserID userID: User.ID, pageCount: Int16? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<Result<User, TwitterServerError>> {
         try await Task {
             var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "2/users/\(userID)/following")!)
             urlRequest.httpMethod = "GET"
@@ -27,12 +27,12 @@ extension User {
                 throw SessionError.invalidServerResponse
             }
 
-            return Pagination(try JSONDecoder.twt_default.decode(TwitterV2Response<[User]>.self, from: data))
+            return Pagination(try JSONDecoder.twt_default.decode(TwitterServerArrayResponseV2<User>.self, from: data))
         }.value
     }
 
-    public static func followingUsers(forUserID userID: User.ID, session: Session) async throws -> [User] {
-        func followingUsers(paginationToken: String?, previousPages: [Pagination<User>]) async throws -> [Pagination<User>] {
+    public static func followingUsers(forUserID userID: User.ID, session: Session) async throws -> [Result<User, TwitterServerError>] {
+        func followingUsers(paginationToken: String?, previousPages: [Pagination<Result<User, TwitterServerError>>]) async throws -> [Pagination<Result<User, TwitterServerError>>] {
             let page = try await self.followingUsers(forUserID: userID, pageCount: 1000, paginationToken: paginationToken, session: session)
 
             if let paginationToken = page.nextToken {
@@ -46,11 +46,11 @@ extension User {
             .flatMap { $0.paginatedItems }
     }
 
-    public func followingUsers(pageCount: Int16? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
+    public func followingUsers(pageCount: Int16? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<Result<User, TwitterServerError>> {
         try await Self.followingUsers(forUserID: id, pageCount: pageCount, paginationToken: paginationToken, session: session)
     }
 
-    public func followingUsers(session: Session) async throws -> [User] {
+    public func followingUsers(session: Session) async throws -> [Result<User, TwitterServerError>] {
         try await Self.followingUsers(forUserID: id, session: session)
     }
 }

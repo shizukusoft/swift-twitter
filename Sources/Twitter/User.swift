@@ -133,11 +133,7 @@ extension User {
                 throw SessionError.invalidServerResponse
             }
 
-            guard let data = try JSONDecoder.twt_default.decode(TwitterV2Response<User>.self, from: data).data else {
-                throw SessionError.dataCorrupted
-            }
-
-            return data
+            return try JSONDecoder.twt_default.decode(TwitterServerResponseV2<User>.self, from: data).data.get()
         }.value
     }
 }
