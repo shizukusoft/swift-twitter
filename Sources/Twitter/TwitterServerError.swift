@@ -22,7 +22,7 @@ extension Result: Decodable where Success: Decodable, Failure == TwitterServerEr
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        guard let error = try container.decodeIfPresent(TwitterServerError.self, forKey: .errors) else {
+        guard let error = try? container.decode(TwitterServerError.self, forKey: .errors) else {
             self = try.success(Success(from: decoder))
             return
         }
