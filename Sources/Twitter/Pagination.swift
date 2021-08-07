@@ -16,7 +16,7 @@ public struct Pagination<Element> {
 
 extension Pagination {
     init(_ response: TwitterV2Response<[Element]>) where Element: Decodable {
-        self.paginatedItems = response.data
+        self.paginatedItems = response.data ?? []
         self.previousToken = response.meta?.previousToken
         self.nextToken = response.meta?.nextToken
     }

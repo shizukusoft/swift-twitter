@@ -21,6 +21,6 @@ struct TwitterV2Response<T: Decodable>: Decodable {
         }
     }
 
-    let data: T
+    let data: T?
     let meta: Meta?
 }
