@@ -24,7 +24,7 @@ extension User {
                 let httpResponse = response as? HTTPURLResponse,
                 (200..<300).contains(httpResponse.statusCode)
             else {
-                throw SessionError.invalidServerResponse
+                throw SessionError.serverError(try? JSONDecoder.twt_default.decode(TwitterServerError.self, from: data))
             }
 
             return Pagination(try JSONDecoder.twt_default.decode(TwitterServerArrayResponseV2<User>.self, from: data))

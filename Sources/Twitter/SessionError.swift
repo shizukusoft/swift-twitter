@@ -9,6 +9,6 @@ import Foundation
 
 public enum SessionError: Error {
     case unknown
-    case invalidServerResponse
+    case serverError(TwitterServerError?)
     case dataCorrupted
 }

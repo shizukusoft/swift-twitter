@@ -158,7 +158,7 @@ extension Session {
                 let httpResponse = response as? HTTPURLResponse,
                 (200..<300).contains(httpResponse.statusCode)
             else {
-                throw SessionError.invalidServerResponse
+                throw SessionError.serverError(try? JSONDecoder.twt_default.decode(TwitterServerError.self, from: data))
             }
 
             guard let string = String(data: data, encoding: .utf8) else {
@@ -188,7 +188,7 @@ extension Session {
                 let httpResponse = response as? HTTPURLResponse,
                 (200..<300).contains(httpResponse.statusCode)
             else {
-                throw SessionError.invalidServerResponse
+                throw SessionError.serverError(try? JSONDecoder.twt_default.decode(TwitterServerError.self, from: data))
             }
 
             guard let string = String(data: data, encoding: .utf8) else {
