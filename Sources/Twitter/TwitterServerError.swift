@@ -8,10 +8,10 @@
 import Foundation
 
 public struct TwitterServerError: Decodable, Error {
-    var type: String
-    var title: String
-    var detail: String
-    var reason: String?
+    public var type: String
+    public var title: String
+    public var detail: String
+    public var reason: String?
 }
 
 extension Result: Decodable where Success: Decodable, Failure == TwitterServerError {
