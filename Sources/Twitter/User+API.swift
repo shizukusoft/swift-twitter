@@ -17,13 +17,7 @@ extension User {
             ]
             await urlRequest.oauthSign(session: session)
 
-            let (data, response) = try await session.urlSession.data(for: urlRequest)
-            guard
-                let httpResponse = response as? HTTPURLResponse,
-                (200..<300).contains(httpResponse.statusCode)
-            else {
-                throw TwitterError.serverError(data: data, urlResponse: response)
-            }
+            let (data, _) = try await session.data(for: urlRequest)
 
             return try JSONDecoder.twt_default.decode(TwitterServerResponseV2<User>.self, from: data).data.get()
         }.value
@@ -41,13 +35,7 @@ extension Array where Element == User {
             ]
             await urlRequest.oauthSign(session: session)
 
-            let (data, response) = try await session.urlSession.data(for: urlRequest)
-            guard
-                let httpResponse = response as? HTTPURLResponse,
-                (200..<300).contains(httpResponse.statusCode)
-            else {
-                throw TwitterError.serverError(data: data, urlResponse: response)
-            }
+            let (data, _) = try await session.data(for: urlRequest)
 
             return try JSONDecoder.twt_default.decode(TwitterServerResponseV2<[User]>.self, from: data).data.get()
         }.value

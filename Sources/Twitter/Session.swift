@@ -40,3 +40,17 @@ public actor Session {
         self.credential = credential
     }
 }
+
+extension Session {
+    func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+        let (data, response) = try await urlSession.data(for: request)
+        guard
+            let httpResponse = response as? HTTPURLResponse,
+            (200..<300).contains(httpResponse.statusCode)
+        else {
+            throw TwitterError.serverError(data: data, urlResponse: response)
+        }
+
+        return (data, response)
+    }
+}

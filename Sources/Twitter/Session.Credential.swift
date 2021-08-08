@@ -153,13 +153,7 @@ extension Session {
 
             await urlRequest.oauthSign(session: self, additionalOAuthParameters: ["oauth_callback": callback])
 
-            let (data, response) = try await urlSession.data(for: urlRequest)
-            guard
-                let httpResponse = response as? HTTPURLResponse,
-                (200..<300).contains(httpResponse.statusCode)
-            else {
-                throw TwitterError.serverError(data: data, urlResponse: response)
-            }
+            let (data, _) = try await data(for: urlRequest)
 
             guard let string = String(data: data, encoding: .utf8) else {
                 throw TwitterError.dataCorrupted
@@ -183,13 +177,7 @@ extension Session {
                 "oauth_token": token
             ])
 
-            let (data, response) = try await urlSession.data(for: urlRequest)
-            guard
-                let httpResponse = response as? HTTPURLResponse,
-                (200..<300).contains(httpResponse.statusCode)
-            else {
-                throw TwitterError.serverError(data: data, urlResponse: response)
-            }
+            let (data, _) = try await data(for: urlRequest)
 
             guard let string = String(data: data, encoding: .utf8) else {
                 throw TwitterError.dataCorrupted
