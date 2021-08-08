@@ -147,47 +147,43 @@ extension Session {
     }
 
     public func fetchRequestToken(callback: String) async throws -> TokenResponse {
-        try await Task { [self] in
-            var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "oauth/request_token")!)
-            urlRequest.httpMethod = "POST"
+        var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "oauth/request_token")!)
+        urlRequest.httpMethod = "POST"
 
-            await urlRequest.oauthSign(session: self, additionalOAuthParameters: ["oauth_callback": callback])
+        await urlRequest.oauthSign(session: self, additionalOAuthParameters: ["oauth_callback": callback])
 
-            let (data, _) = try await data(for: urlRequest)
+        let (data, _) = try await data(for: urlRequest)
 
-            guard let string = String(data: data, encoding: .utf8) else {
-                throw TwitterError.dataCorrupted
-            }
+        guard let string = String(data: data, encoding: .utf8) else {
+            throw TwitterError.dataCorrupted
+        }
 
-            guard let token = TokenResponse(response: string) else {
-                throw TwitterError.dataCorrupted
-            }
+        guard let token = TokenResponse(response: string) else {
+            throw TwitterError.dataCorrupted
+        }
 
-            return token
-        }.value
+        return token
     }
 
     public func fetchAccessToken(token: String, verifier: String) async throws -> TokenResponse {
-        try await Task { [self] in
-            var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "oauth/access_token")!)
-            urlRequest.httpMethod = "POST"
+        var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "oauth/access_token")!)
+        urlRequest.httpMethod = "POST"
 
-            await urlRequest.oauthSign(session: self, additionalOAuthParameters: [
-                "oauth_verifier": verifier,
-                "oauth_token": token
-            ])
+        await urlRequest.oauthSign(session: self, additionalOAuthParameters: [
+            "oauth_verifier": verifier,
+            "oauth_token": token
+        ])
 
-            let (data, _) = try await data(for: urlRequest)
+        let (data, _) = try await data(for: urlRequest)
 
-            guard let string = String(data: data, encoding: .utf8) else {
-                throw TwitterError.dataCorrupted
-            }
+        guard let string = String(data: data, encoding: .utf8) else {
+            throw TwitterError.dataCorrupted
+        }
 
-            guard let token = TokenResponse(response: string) else {
-                throw TwitterError.dataCorrupted
-            }
+        guard let token = TokenResponse(response: string) else {
+            throw TwitterError.dataCorrupted
+        }
 
-            return token
-        }.value
+        return token
     }
 }

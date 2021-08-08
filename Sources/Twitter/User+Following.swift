@@ -9,20 +9,18 @@ import Foundation
 
 extension User {
     public static func followingUsers(forUserID userID: User.ID, pageCount: Int16? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<Result<User, TwitterServerError>> {
-        try await Task {
-            var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "2/users/\(userID)/following")!)
-            urlRequest.httpMethod = "GET"
-            urlRequest.urlComponents?.queryItems = [
-                pageCount.flatMap { URLQueryItem(name: "max_results", value: String($0)) },
-                paginationToken.flatMap { URLQueryItem(name: "pagination_token", value: $0) },
-                URLQueryItem(name: "user.fields", value: "created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,withheld")
-            ].compactMap({$0})
-            await urlRequest.oauthSign(session: session)
+        var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "2/users/\(userID)/following")!)
+        urlRequest.httpMethod = "GET"
+        urlRequest.urlComponents?.queryItems = [
+            pageCount.flatMap { URLQueryItem(name: "max_results", value: String($0)) },
+            paginationToken.flatMap { URLQueryItem(name: "pagination_token", value: $0) },
+            URLQueryItem(name: "user.fields", value: "created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,withheld")
+        ].compactMap({$0})
+        await urlRequest.oauthSign(session: session)
 
-            let (data, _) = try await session.data(for: urlRequest)
+        let (data, _) = try await session.data(for: urlRequest)
 
-            return Pagination(try JSONDecoder.twt_default.decode(TwitterServerArrayResponseV2<User>.self, from: data))
-        }.value
+        return Pagination(try JSONDecoder.twt_default.decode(TwitterServerArrayResponseV2<User>.self, from: data))
     }
 
     public static func followingUsers(forUserID userID: User.ID, session: Session) async throws -> [Result<User, TwitterServerError>] {

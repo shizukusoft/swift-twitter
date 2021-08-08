@@ -21,14 +21,12 @@ public struct Account: Decodable, Identifiable {
 
 extension Account {
     public static func me(session: Session) async throws -> Account {
-        try await Task {
-            var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "1.1/account/verify_credentials.json")!)
-            urlRequest.httpMethod = "GET"
-            await urlRequest.oauthSign(session: session)
+        var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "1.1/account/verify_credentials.json")!)
+        urlRequest.httpMethod = "GET"
+        await urlRequest.oauthSign(session: session)
 
-            let (data, _) = try await session.data(for: urlRequest)
+        let (data, _) = try await session.data(for: urlRequest)
 
-            return try JSONDecoder.twt_default.decode(Account.self, from: data)
-        }.value
+        return try JSONDecoder.twt_default.decode(Account.self, from: data)
     }
 }
