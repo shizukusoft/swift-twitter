@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct User: Identifiable {
+public struct User {
     public let id: String
     public let name: String
     public let username: String
@@ -38,6 +38,52 @@ extension User {
         public let listedCount: Int
     }
 }
+
+extension User {
+    public var profileImageOriginalURL: URL {
+        return profileImageURL
+            .deletingLastPathComponent()
+            .appendingPathComponent(profileImageURL.lastPathComponent.replacingOccurrences(of: "_normal.", with: "."))
+    }
+}
+
+extension User {
+    public var expandedURL: URL? {
+        return url.flatMap { url in
+            let urlEntities = urlEntities.urls
+
+            return URL(
+                string: urlEntities.reduce(into: url.absoluteString) {
+                    if let range = $0.range(of: $1.urlString), let expandedURL = $1.expandedURL {
+                        $0.replaceSubrange(range, with: expandedURL.absoluteString)
+                    }
+                }
+            )
+        }
+    }
+
+    public var attributedDescription: AttributedString? {
+        return attributedDescription {
+            var link = AttributedString($0.urlStringForDisplay ?? $0.urlString)
+            link[link.startIndex..<link.endIndex].link = $0.expandedURL ?? URL(string: $0.urlString)
+            return link
+        }
+    }
+
+    public func attributedDescription(_ urlEntityHandler: (URLEntity) -> AttributedString) -> AttributedString {
+        var attributedDescription = AttributedString(description)
+
+        descriptionEntities.urls.forEach {
+            if let range = attributedDescription.range(of: $0.urlString) {
+                attributedDescription.replaceSubrange(range, with: urlEntityHandler($0))
+            }
+        }
+
+        return attributedDescription
+    }
+}
+
+extension User: Identifiable {}
 
 extension User: Decodable {
     private struct UserEntities: Decodable {
@@ -91,72 +137,5 @@ extension User.PublicMetrics: Decodable {
         case followingUsersCount = "following_count"
         case tweetsCount = "tweet_count"
         case listedCount = "listed_count"
-    }
-}
-
-extension User {
-    public var profileImageOriginalURL: URL {
-        return profileImageURL
-            .deletingLastPathComponent()
-            .appendingPathComponent(profileImageURL.lastPathComponent.replacingOccurrences(of: "_normal.", with: "."))
-    }
-}
-
-extension User {
-    public var expandedURL: URL? {
-        return url.flatMap { url in
-            let urlEntities = urlEntities.urls
-
-            return URL(
-                string: urlEntities.reduce(into: url.absoluteString) {
-                    if let range = $0.range(of: $1.urlString), let expandedURL = $1.expandedURL {
-                        $0.replaceSubrange(range, with: expandedURL.absoluteString)
-                    }
-                }
-            )
-        }
-    }
-
-    public var attributedDescription: AttributedString? {
-        return attributedDescription {
-            var link = AttributedString($0.urlStringForDisplay ?? $0.urlString)
-            link[link.startIndex..<link.endIndex].link = $0.expandedURL ?? URL(string: $0.urlString)
-            return link
-        }
-    }
-
-    public func attributedDescription(_ urlEntityHandler: (URLEntity) -> AttributedString) -> AttributedString {
-        var attributedDescription = AttributedString(description)
-
-        descriptionEntities.urls.forEach {
-            if let range = attributedDescription.range(of: $0.urlString) {
-                attributedDescription.replaceSubrange(range, with: urlEntityHandler($0))
-            }
-        }
-
-        return attributedDescription
-    }
-}
-
-extension User {
-    public init(id: User.ID, session: Session) async throws {
-        self = try await Task {
-            var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "2/users/\(id)")!)
-            urlRequest.httpMethod = "GET"
-            urlRequest.urlComponents?.queryItems = [
-                URLQueryItem(name: "user.fields", value: "created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,withheld")
-            ]
-            await urlRequest.oauthSign(session: session)
-
-            let (data, response) = try await session.urlSession.data(for: urlRequest)
-            guard
-                let httpResponse = response as? HTTPURLResponse,
-                (200..<300).contains(httpResponse.statusCode)
-            else {
-                throw TwitterError.serverError(data: data, urlResponse: response)
-            }
-
-            return try JSONDecoder.twt_default.decode(TwitterServerResponseV2<User>.self, from: data).data.get()
-        }.value
     }
 }

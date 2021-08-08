@@ -31,7 +31,6 @@ extension User {
         }.value
     }
 
-
     public static func blockingUsers(forUserID userID: User.ID, session: Session) async throws -> [Result<User, TwitterServerError>] {
         func blockingUsers(paginationToken: String?, previousPages: [Pagination<Result<User, TwitterServerError>>]) async throws -> [Pagination<Result<User, TwitterServerError>>] {
             let page = try await self.blockingUsers(forUserID: userID, pageCount: 1000, paginationToken: paginationToken, session: session)
