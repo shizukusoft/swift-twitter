@@ -53,7 +53,7 @@ extension User {
         urlRequest.httpMethod = "GET"
         urlRequest.urlComponents?.queryItems = [
             URLQueryItem(name: "stringify_ids", value: "true"),
-            paginationToken.flatMap { URLQueryItem(name: "pagination_token", value: $0) },
+            paginationToken.flatMap { URLQueryItem(name: "cursor", value: $0) },
         ].compactMap({$0})
         await urlRequest.oauthSign(session: session)
 
