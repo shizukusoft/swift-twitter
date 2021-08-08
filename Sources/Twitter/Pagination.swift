@@ -21,3 +21,11 @@ extension Pagination {
         self.nextToken = response.meta?.nextToken
     }
 }
+
+extension Pagination where Element == User.ID {
+    init(_ response: TwitterServerUserIDsResponseV1) {
+        self.paginatedItems = response.ids
+        self.previousToken = response.previousCursor != 0 ? String(response.previousCursor) : nil
+        self.nextToken = response.nextCursor != 0 ? String(response.nextCursor) : nil
+    }
+}

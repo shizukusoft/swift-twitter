@@ -14,12 +14,12 @@ public actor Session {
 
     let delegate: Delegate
 
-    private(set) lazy var mainQueue = DispatchQueue(
+    private(set) nonisolated lazy var mainQueue = DispatchQueue(
         label: "\(String(reflecting: self)).0x\(String(UInt(bitPattern: ObjectIdentifier(self)), radix: 16)).main",
         qos: .default
     )
 
-    private(set) lazy var mainOperationQueue: OperationQueue = {
+    private(set) nonisolated lazy var mainOperationQueue: OperationQueue = {
         let operationQueue = OperationQueue()
         operationQueue.underlyingQueue = self.mainQueue
         operationQueue.name = "\(String(reflecting: self)).0x\(String(UInt(bitPattern: ObjectIdentifier(self)), radix: 16)).main"
@@ -27,7 +27,7 @@ public actor Session {
         return operationQueue
     }()
 
-    private(set) lazy var urlSession = URLSession(configuration: .twt_default, delegate: delegate, delegateQueue: mainOperationQueue)
+    private(set) nonisolated lazy var urlSession = URLSession(configuration: .twt_default, delegate: delegate, delegateQueue: mainOperationQueue)
 
     public init(consumerKey: String, consumerSecret: String, delegate: Delegate = Delegate()) async {
         self.consumerKey = consumerKey
