@@ -46,3 +46,43 @@ extension User {
         try await Self.followers(forUserID: id, session: session)
     }
 }
+
+extension User {
+    public static func followerIDs(forUserID userID: User.ID, paginationToken: String? = nil, session: Session) async throws -> Pagination<User.ID> {
+        var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "1.1/followers/ids.json")!)
+        urlRequest.httpMethod = "GET"
+        urlRequest.urlComponents?.queryItems = [
+            URLQueryItem(name: "stringify_ids", value: "true"),
+            paginationToken.flatMap { URLQueryItem(name: "pagination_token", value: $0) },
+        ].compactMap({$0})
+        await urlRequest.oauthSign(session: session)
+
+        let (data, _) = try await session.data(for: urlRequest)
+
+        return Pagination(try JSONDecoder.twt_default.decode(TwitterServerUserIDsResponseV1.self, from: data))
+    }
+
+    public func followerIDs(paginationToken: String? = nil, session: Session) async throws -> Pagination<User.ID> {
+        try await Self.followerIDs(forUserID: id, paginationToken: paginationToken, session: session)
+    }
+
+    public static func followerIDs(forUserID userID: User.ID, session: Session) async throws -> [User.ID] {
+        func followerIDs(forUserID userID: User.ID, paginationToken: String?, previousPages: [Pagination<User.ID>]) async throws -> [Pagination<User.ID>] {
+            let page = try await self.followerIDs(forUserID: userID, paginationToken: paginationToken, session: session)
+
+            if let paginationToken = page.nextToken {
+                return try await followerIDs(forUserID: userID, paginationToken: paginationToken, previousPages: previousPages + [page])
+            } else {
+                return previousPages + [page]
+            }
+        }
+
+        return try await followerIDs(forUserID: userID, paginationToken: nil, previousPages: [])
+            .flatMap { $0.paginatedItems }
+    }
+
+    public func followerIDs(session: Session) async throws -> [User.ID] {
+        try await Self.followerIDs(forUserID: id, session: session)
+    }
+}
+

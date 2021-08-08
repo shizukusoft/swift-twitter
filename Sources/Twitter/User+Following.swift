@@ -46,3 +46,42 @@ extension User {
         try await Self.followingUsers(forUserID: id, session: session)
     }
 }
+
+extension User {
+    public static func followingUserIDs(forUserID userID: User.ID, paginationToken: String? = nil, session: Session) async throws -> Pagination<User.ID> {
+        var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "1.1/friends/ids.json")!)
+        urlRequest.httpMethod = "GET"
+        urlRequest.urlComponents?.queryItems = [
+            URLQueryItem(name: "stringify_ids", value: "true"),
+            paginationToken.flatMap { URLQueryItem(name: "pagination_token", value: $0) },
+        ].compactMap({$0})
+        await urlRequest.oauthSign(session: session)
+
+        let (data, _) = try await session.data(for: urlRequest)
+
+        return Pagination(try JSONDecoder.twt_default.decode(TwitterServerUserIDsResponseV1.self, from: data))
+    }
+
+    public func followingUserIDs(paginationToken: String? = nil, session: Session) async throws -> Pagination<User.ID> {
+        try await Self.followingUserIDs(forUserID: id, paginationToken: paginationToken, session: session)
+    }
+
+    public static func followingUserIDs(forUserID userID: User.ID, session: Session) async throws -> [User.ID] {
+        func followingUserIDs(forUserID userID: User.ID, paginationToken: String?, previousPages: [Pagination<User.ID>]) async throws -> [Pagination<User.ID>] {
+            let page = try await self.followingUserIDs(forUserID: userID, paginationToken: paginationToken, session: session)
+
+            if let paginationToken = page.nextToken {
+                return try await followingUserIDs(forUserID: userID, paginationToken: paginationToken, previousPages: previousPages + [page])
+            } else {
+                return previousPages + [page]
+            }
+        }
+
+        return try await followingUserIDs(forUserID: userID, paginationToken: nil, previousPages: [])
+            .flatMap { $0.paginatedItems }
+    }
+
+    public func followingUserIDs(session: Session)  async throws -> [User.ID] {
+        try await Self.followingUserIDs(forUserID: id, session: session)
+    }
+}
