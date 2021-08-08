@@ -48,3 +48,34 @@ extension User {
         try await Self.blockingUsers(forUserID: id, session: session)
     }
 }
+
+extension User {
+    public static func myBlockingUserIDs(paginationToken: String? = nil, session: Session) async throws -> Pagination<User.ID> {
+        var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "1.1/blocks/ids.json")!)
+        urlRequest.httpMethod = "GET"
+        urlRequest.urlComponents?.queryItems = [
+            URLQueryItem(name: "stringify_ids", value: "true"),
+            paginationToken.flatMap { URLQueryItem(name: "pagination_token", value: $0) },
+        ].compactMap({$0})
+        await urlRequest.oauthSign(session: session)
+
+        let (data, _) = try await session.data(for: urlRequest)
+
+        return Pagination(try JSONDecoder.twt_default.decode(TwitterServerUserIDsResponseV1.self, from: data))
+    }
+
+    public static func myBlockingUserIDs(session: Session) async throws -> [User.ID] {
+        func myBlockingUserIDs(paginationToken: String?, previousPages: [Pagination<User.ID>]) async throws -> [Pagination<User.ID>] {
+            let page = try await self.myBlockingUserIDs(paginationToken: paginationToken, session: session)
+
+            if let paginationToken = page.nextToken {
+                return try await myBlockingUserIDs(paginationToken: paginationToken, previousPages: previousPages + [page])
+            } else {
+                return previousPages + [page]
+            }
+        }
+
+        return try await myBlockingUserIDs(paginationToken: nil, previousPages: [])
+            .flatMap { $0.paginatedItems }
+    }
+}
