@@ -8,31 +8,19 @@
 import Foundation
 
 public actor Session {
-    public let consumerKey: String
-    public let consumerSecret: String
+    public nonisolated let consumerKey: String
+    public nonisolated let consumerSecret: String
     public var credential: Credential?
 
-    let delegate: Delegate
+    nonisolated let delegate: Delegate
 
-    private(set) nonisolated lazy var mainQueue = DispatchQueue(
-        label: "\(String(reflecting: self)).0x\(String(UInt(bitPattern: ObjectIdentifier(self)), radix: 16)).main",
-        qos: .default
-    )
-
-    private(set) nonisolated lazy var mainOperationQueue: OperationQueue = {
-        let operationQueue = OperationQueue()
-        operationQueue.underlyingQueue = self.mainQueue
-        operationQueue.name = "\(String(reflecting: self)).0x\(String(UInt(bitPattern: ObjectIdentifier(self)), radix: 16)).main"
-
-        return operationQueue
-    }()
-
-    private(set) nonisolated lazy var urlSession = URLSession(configuration: .twt_default, delegate: delegate, delegateQueue: mainOperationQueue)
+    private(set) nonisolated lazy var urlSession = URLSession(configuration: .twt_default, delegate: delegate, delegateQueue: nil)
 
     public init(consumerKey: String, consumerSecret: String, delegate: Delegate = Delegate()) async {
         self.consumerKey = consumerKey
         self.consumerSecret = consumerSecret
         self.delegate = delegate
+        
         self.delegate.session = self
     }
 
