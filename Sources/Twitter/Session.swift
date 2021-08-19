@@ -15,12 +15,15 @@ public actor Session {
     nonisolated let delegate: Delegate
 
     private(set) nonisolated lazy var urlSession = URLSession(configuration: .twt_default, delegate: delegate, delegateQueue: nil)
-
-    public init(consumerKey: String, consumerSecret: String, delegate: Delegate = Delegate()) async {
+    
+    private init(_ consumerKey: String, _ consumerSecret: String, _ delegate: Delegate) {
         self.consumerKey = consumerKey
         self.consumerSecret = consumerSecret
         self.delegate = delegate
-        
+    }
+    
+    public convenience init(consumerKey: String, consumerSecret: String, delegate: Delegate = Delegate()) {
+        self.init(consumerKey, consumerSecret, delegate)
         self.delegate.session = self
     }
 
