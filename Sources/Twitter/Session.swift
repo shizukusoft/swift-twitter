@@ -27,7 +27,7 @@ public actor Session {
         self.delegate.session = self
     }
 
-    public func updateCredential(_ credential: Credential) {
+    public func updateCredential(_ credential: Credential?) {
         self.credential = credential
     }
 }
