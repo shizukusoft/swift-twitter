@@ -11,10 +11,6 @@ import OrderedCollections
 extension URLSessionConfiguration {
     public static var twt_default: URLSessionConfiguration {
         let configuration = URLSessionConfiguration.default
-        let ephemeral = URLSessionConfiguration.ephemeral
-
-        configuration.httpCookieStorage = ephemeral.httpCookieStorage
-        configuration.urlCredentialStorage = ephemeral.urlCredentialStorage
         
         configuration.httpAdditionalHeaders = {
             var httpAdditionalHeaders = configuration.httpAdditionalHeaders ?? [:]
