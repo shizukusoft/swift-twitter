@@ -12,19 +12,27 @@ public actor Session {
     public nonisolated let consumerSecret: String
     public var credential: Credential?
 
-    nonisolated let delegate: Delegate
-
-    private(set) nonisolated lazy var urlSession = URLSession(configuration: .twt_default, delegate: delegate, delegateQueue: nil)
+    weak var delegate: Delegate?
     
-    private init(_ consumerKey: String, _ consumerSecret: String, _ delegate: Delegate) {
+    nonisolated let urlSession: URLSession
+
+    private init(_ consumerKey: String, _ consumerSecret: String, _ urlSessionConfiguration: URLSessionConfiguration, _ delegate: Delegate) {
         self.consumerKey = consumerKey
         self.consumerSecret = consumerSecret
         self.delegate = delegate
+        self.urlSession = URLSession(configuration: urlSessionConfiguration, delegate: delegate, delegateQueue: nil)
     }
     
-    public convenience init(consumerKey: String, consumerSecret: String, delegate: Delegate = Delegate()) {
-        self.init(consumerKey, consumerSecret, delegate)
-        self.delegate.session = self
+    public convenience init(consumerKey: String, consumerSecret: String, urlSessionConfiguration: URLSessionConfiguration = .twt_default, delegate: Delegate = Delegate()) {
+        self.init(consumerKey, consumerSecret, urlSessionConfiguration, delegate)
+        
+        Task {
+            await self.delegate?.session = self
+        }
+    }
+    
+    deinit {
+        urlSession.invalidateAndCancel()
     }
 
     public func updateCredential(_ credential: Credential?) {
