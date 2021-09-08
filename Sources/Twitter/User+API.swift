@@ -22,8 +22,8 @@ extension User {
     }
 }
 
-extension Array where Element == User {
-    public init(ids: [User.ID], session: Session) async throws {
+extension User {
+    public static func users(ids: [User.ID], session: Session) async throws -> [Result<User, TwitterServerError>] {
         var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "2/users")!)
         urlRequest.httpMethod = "GET"
         urlRequest.urlComponents?.queryItems = [
@@ -34,8 +34,6 @@ extension Array where Element == User {
 
         let (data, _) = try await session.data(for: urlRequest)
 
-        self = try JSONDecoder.twt_default.decode(TwitterServerArrayResponseV2<User>.self, from: data)
-            .data?
-            .map { try $0.get() } ?? []
+        return try JSONDecoder.twt_default.decode(TwitterServerArrayResponseV2<User>.self, from: data).data ?? []
     }
 }
