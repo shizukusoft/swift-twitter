@@ -25,7 +25,7 @@ public struct User {
 
     public let createdAt: Date
 
-    public let profileImageURL: URL
+    public let profileImageURL: URL?
 
     public let publicMetrics: PublicMetrics
 }
@@ -40,7 +40,9 @@ extension User {
 }
 
 extension User {
-    public var profileImageOriginalURL: URL {
+    public var profileImageOriginalURL: URL? {
+        guard let profileImageURL = profileImageURL else { return nil }
+
         return profileImageURL
             .deletingLastPathComponent()
             .appendingPathComponent(profileImageURL.lastPathComponent.replacingOccurrences(of: "_normal.", with: "."))
@@ -125,7 +127,7 @@ extension User: Decodable {
 
         self.createdAt = try container.decode(Date.self, forKey: .createdAt)
 
-        self.profileImageURL = try container.decode(URL.self, forKey: .profileImageURL)
+        self.profileImageURL = try? container.decode(URL.self, forKey: .profileImageURL)
 
         self.publicMetrics = try container.decode(PublicMetrics.self, forKey: .publicMetrics)
     }
