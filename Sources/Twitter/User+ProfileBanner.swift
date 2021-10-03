@@ -11,10 +11,10 @@ import OrderedCollections
 extension User {
     public struct ProfileBanner {
         public struct SizeClass {
-            let width: Double
-            let height: Double
+            public let width: Double
+            public let height: Double
 
-            let url: URL
+            public let url: URL
         }
 
         public let sizes: OrderedDictionary<String, SizeClass>
