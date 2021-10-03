@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import OrderedCollections
 
 extension User {
     public struct ProfileBanner {
@@ -17,7 +16,7 @@ extension User {
             public let url: URL
         }
 
-        public let sizes: OrderedDictionary<String, SizeClass>
+        public let sizes: [String: SizeClass]
     }
 
     public static func profileBanner(forUserID userID: User.ID, session: Session) async throws -> ProfileBanner? {
@@ -52,6 +51,6 @@ extension User.ProfileBanner.SizeClass: Decodable {
     enum CodingKeys: String, CodingKey {
         case width = "w"
         case height = "h"
-        case url = "url"
+        case url
     }
 }
