@@ -44,5 +44,5 @@ extension User {
 
     public func tweets(session: Session) async throws -> [Result<Tweet, TwitterServerError>] {
         try await Self.tweets(forUserID: id, session: session)
-    };
+    }
 }
