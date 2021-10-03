@@ -20,7 +20,7 @@ extension User {
         public let sizes: OrderedDictionary<String, SizeClass>
     }
 
-    public static func profileBanner(forUserID userID: User.ID, session: Session) async throws -> ProfileBanner {
+    public static func profileBanner(forUserID userID: User.ID, session: Session) async throws -> ProfileBanner? {
         var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "1.1/users/profile_banner.json")!)
         urlRequest.httpMethod = "GET"
         urlRequest.urlComponents?.queryItems = [
@@ -28,12 +28,20 @@ extension User {
         ]
         await urlRequest.oauthSign(session: session)
 
-        let (data, _) = try await session.data(for: urlRequest)
+        do {
+            let (data, _) = try await session.data(for: urlRequest)
 
-        return try JSONDecoder.twt_default.decode(ProfileBanner.self, from: data)
+            return try JSONDecoder.twt_default.decode(ProfileBanner.self, from: data)
+        } catch TwitterError.serverError(let serverErrorPayload, let urlResponse) {
+            guard (urlResponse as? HTTPURLResponse)?.statusCode == 404 else {
+                throw TwitterError.serverError(serverErrorPayload, urlResponse: urlResponse)
+            }
+
+            return nil
+        }
     }
 
-    public func profileBanner(session: Session) async throws -> ProfileBanner {
+    public func profileBanner(session: Session) async throws -> ProfileBanner? {
         try await Self.profileBanner(forUserID: id, session: session)
     }
 }
