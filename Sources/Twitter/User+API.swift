@@ -18,12 +18,18 @@ extension User {
 
         let (data, _) = try await session.data(for: urlRequest)
 
-        self = try JSONDecoder.twt_default.decode(TwitterServerResponseV2<User>.self, from: data).data.get()
+        let response = try JSONDecoder.twt_default.decode(TwitterServerResponseV2<User>.self, from: data)
+
+        guard let user = response.data else {
+            throw response.error ?? TwitterError.dataCorrupted
+        }
+
+        self = user
     }
 }
 
 extension User {
-    public static func users(ids: [User.ID], session: Session) async throws -> [Result<User, TwitterServerError>] {
+    public static func users(ids: [User.ID], session: Session) async throws -> (users: [User], errors: [TwitterServerError]) {
         var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "2/users")!)
         urlRequest.httpMethod = "GET"
         urlRequest.urlComponents?.queryItems = [
@@ -34,6 +40,8 @@ extension User {
 
         let (data, _) = try await session.data(for: urlRequest)
 
-        return try JSONDecoder.twt_default.decode(TwitterServerArrayResponseV2<User>.self, from: data).data ?? []
+        let response = try JSONDecoder.twt_default.decode(TwitterServerArrayResponseV2<User>.self, from: data)
+
+        return (response.data ?? [], response.errors ?? [])
     }
 }

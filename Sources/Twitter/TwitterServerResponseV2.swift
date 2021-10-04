@@ -8,5 +8,6 @@
 import Foundation
 
 struct TwitterServerResponseV2<Value>: Decodable where Value: Decodable {
-    let data: Result<Value, TwitterServerError>
+    let data: Value?
+    let error: TwitterServerError?
 }

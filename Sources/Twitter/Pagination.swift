@@ -7,16 +7,18 @@
 
 import Foundation
 
-public struct Pagination<Element> {
-    public let paginatedItems: Array<Element>
+public struct Pagination<Element> where Element: Decodable {
+    public let items: Array<Element>
+    public let errors: Array<TwitterServerError>
 
     public let previousToken: String?
     public let nextToken: String?
 }
 
 extension Pagination {
-    init<V>(_ response: TwitterServerArrayResponseV2<V>) where Element == Result<V, TwitterServerError> {
-        self.paginatedItems = response.data ?? []
+    init(_ response: TwitterServerArrayResponseV2<Element>) {
+        self.items = response.data ?? []
+        self.errors = response.errors ?? []
         self.previousToken = response.meta?.previousToken
         self.nextToken = response.meta?.nextToken
     }
@@ -24,7 +26,8 @@ extension Pagination {
 
 extension Pagination where Element == User.ID {
     init(_ response: TwitterServerUserIDsResponseV1) {
-        self.paginatedItems = response.ids
+        self.items = response.ids
+        self.errors = []
         self.previousToken = response.previousCursor != 0 ? String(response.previousCursor) : nil
         self.nextToken = response.nextCursor != 0 ? String(response.nextCursor) : nil
     }

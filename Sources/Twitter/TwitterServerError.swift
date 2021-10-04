@@ -12,21 +12,5 @@ public struct TwitterServerError: Decodable, Error {
     public var title: String
     public var detail: String
     public var reason: String?
-}
-
-extension Result: Decodable where Success: Decodable, Failure == TwitterServerError {
-    enum CodingKeys: CodingKey {
-        case errors
-    }
-
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-
-        guard let error = try? container.decode(TwitterServerError.self, forKey: .errors) else {
-            self = try.success(Success(from: decoder))
-            return
-        }
-
-        self = .failure(error)
-    }
+    public var value: String?
 }

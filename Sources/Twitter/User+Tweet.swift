@@ -8,7 +8,7 @@
 import Foundation
 
 extension User {
-    public static func tweets(forUserID userID: User.ID, pageCount: Int16? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<Result<Tweet, TwitterServerError>> {
+    public static func tweets(forUserID userID: User.ID, pageCount: Int16? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<Tweet> {
         var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "2/users/\(userID)/tweets")!)
         urlRequest.httpMethod = "GET"
         urlRequest.urlComponents?.queryItems = [
@@ -23,8 +23,8 @@ extension User {
         return Pagination(try JSONDecoder.twt_default.decode(TwitterServerArrayResponseV2<Tweet>.self, from: data))
     }
     
-    public static func tweets(forUserID userID: User.ID, session: Session) async throws -> [Result<Tweet, TwitterServerError>] {
-        func tweets(paginationToken: String?, previousPages: [Pagination<Result<Tweet, TwitterServerError>>]) async throws -> [Pagination<Result<Tweet, TwitterServerError>>] {
+    public static func tweets(forUserID userID: User.ID, session: Session) async throws -> (tweets: [Tweet], errors: [TwitterServerError]) {
+        func tweets(paginationToken: String?, previousPages: [Pagination<Tweet>]) async throws -> [Pagination<Tweet>] {
             let page = try await self.tweets(forUserID: userID, pageCount: 100, paginationToken: paginationToken, session: session)
 
             if let paginationToken = page.nextToken {
@@ -34,15 +34,16 @@ extension User {
             }
         }
 
-        return try await tweets(paginationToken: nil, previousPages: [])
-            .flatMap { $0.paginatedItems }
+        let tweetPages = try await tweets(paginationToken: nil, previousPages: [])
+
+        return (tweets: tweetPages.flatMap { $0.items }, tweetPages.flatMap { $0.errors })
     }
     
-    public func tweets(pageCount: Int16? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<Result<Tweet, TwitterServerError>> {
+    public func tweets(pageCount: Int16? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<Tweet> {
         try await Self.tweets(forUserID: id, pageCount: pageCount, paginationToken: paginationToken, session: session)
     }
 
-    public func tweets(session: Session) async throws -> [Result<Tweet, TwitterServerError>] {
+    public func tweets(session: Session) async throws-> (tweets: [Tweet], errors: [TwitterServerError]) {
         try await Self.tweets(forUserID: id, session: session)
     }
 }

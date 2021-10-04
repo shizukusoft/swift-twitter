@@ -8,7 +8,7 @@
 import Foundation
 
 extension User {
-    public static func blockingUsers(forUserID userID: User.ID, pageCount: Int16? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<Result<User, TwitterServerError>> {
+    public static func blockingUsers(forUserID userID: User.ID, pageCount: Int16? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
         var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "2/users/\(userID)/blocking")!)
         urlRequest.httpMethod = "GET"
         urlRequest.urlComponents?.queryItems = [
@@ -23,12 +23,12 @@ extension User {
         return Pagination(try JSONDecoder.twt_default.decode(TwitterServerArrayResponseV2<User>.self, from: data))
     }
 
-    public func blockingUsers(pageCount: Int16? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<Result<User, TwitterServerError>> {
+    public func blockingUsers(pageCount: Int16? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
         try await Self.blockingUsers(forUserID: id, pageCount: pageCount, paginationToken: paginationToken, session: session)
     }
 
-    public static func blockingUsers(forUserID userID: User.ID, session: Session) async throws -> [Result<User, TwitterServerError>] {
-        func blockingUsers(paginationToken: String?, previousPages: [Pagination<Result<User, TwitterServerError>>]) async throws -> [Pagination<Result<User, TwitterServerError>>] {
+    public static func blockingUsers(forUserID userID: User.ID, session: Session) async throws -> (users: [User], errors: [TwitterServerError]) {
+        func blockingUsers(paginationToken: String?, previousPages: [Pagination<User>]) async throws -> [Pagination<User>] {
             let page = try await self.blockingUsers(forUserID: userID, pageCount: 1000, paginationToken: paginationToken, session: session)
 
             if let paginationToken = page.nextToken {
@@ -38,11 +38,12 @@ extension User {
             }
         }
 
-        return try await blockingUsers(paginationToken: nil, previousPages: [])
-            .flatMap { $0.paginatedItems }
+        let blockingUserPages = try await blockingUsers(paginationToken: nil, previousPages: [])
+
+        return (users: blockingUserPages.flatMap { $0.items }, errors: blockingUserPages.flatMap { $0.errors })
     }
 
-    public func blockingUsers(session: Session) async throws -> [Result<User, TwitterServerError>] {
+    public func blockingUsers(session: Session) async throws -> (users: [User], errors: [TwitterServerError]) {
         try await Self.blockingUsers(forUserID: id, session: session)
     }
 }
@@ -62,7 +63,7 @@ extension User {
         return Pagination(try JSONDecoder.twt_default.decode(TwitterServerUserIDsResponseV1.self, from: data))
     }
 
-    public static func myBlockingUserIDs(session: Session) async throws -> [User.ID] {
+    public static func myBlockingUserIDs(session: Session) async throws -> (userIDs: [User.ID], errors: [TwitterServerError]) {
         func myBlockingUserIDs(paginationToken: String?, previousPages: [Pagination<User.ID>]) async throws -> [Pagination<User.ID>] {
             let page = try await self.myBlockingUserIDs(paginationToken: paginationToken, session: session)
 
@@ -73,7 +74,8 @@ extension User {
             }
         }
 
-        return try await myBlockingUserIDs(paginationToken: nil, previousPages: [])
-            .flatMap { $0.paginatedItems }
+        let myBlockingUserIDPages = try await myBlockingUserIDs(paginationToken: nil, previousPages: [])
+
+        return (userIDs: myBlockingUserIDPages.flatMap { $0.items }, errors: myBlockingUserIDPages.flatMap { $0.errors })
     }
 }

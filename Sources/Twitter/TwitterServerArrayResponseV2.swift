@@ -21,6 +21,7 @@ struct TwitterServerArrayResponseV2<Element>: Decodable where Element: Decodable
         }
     }
 
-    let data: [Result<Element, TwitterServerError>]?
+    let data: [Element]?
     let meta: Meta?
+    let errors: [TwitterServerError]?
 }

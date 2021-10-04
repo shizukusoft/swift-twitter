@@ -22,7 +22,7 @@ extension User {
         return Pagination(try JSONDecoder.twt_default.decode(TwitterServerUserIDsResponseV1.self, from: data))
     }
 
-    public static func myMutingUserIDs(session: Session) async throws -> [User.ID] {
+    public static func myMutingUserIDs(session: Session) async throws -> (userIDs: [User.ID], errors: [TwitterServerError]) {
         func myMutingUserIDs(paginationToken: String?, previousPages: [Pagination<User.ID>]) async throws -> [Pagination<User.ID>] {
             let page = try await self.myMutingUserIDs(paginationToken: paginationToken, session: session)
 
@@ -33,7 +33,8 @@ extension User {
             }
         }
 
-        return try await myMutingUserIDs(paginationToken: nil, previousPages: [])
-            .flatMap { $0.paginatedItems }
+        let myMutingUserIDPages = try await myMutingUserIDs(paginationToken: nil, previousPages: [])
+
+        return (userIDs: myMutingUserIDPages.flatMap { $0.items }, errors: myMutingUserIDPages.flatMap { $0.errors })
     }
 }
