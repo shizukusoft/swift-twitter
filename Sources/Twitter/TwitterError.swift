@@ -27,3 +27,50 @@ public enum TwitterError: Error {
         }
     }
 }
+
+extension TwitterError: LocalizedError {
+    public var errorDescription: String? {
+        switch self {
+        case .unknown:
+            return nil
+        case .serverError(.error(let error)?, urlResponse: _):
+            return error.errorDescription
+        case .serverError(.string(let string)?, urlResponse: _):
+            return string
+        case .serverError(.none, urlResponse: _):
+            return nil
+        case .dataCorrupted:
+            return nil
+        }
+    }
+
+    public var failureReason: String? {
+        switch self {
+        case .unknown:
+            return nil
+        case .serverError(.error(let error)?, urlResponse: _):
+            return error.failureReason
+        case .serverError(.string(_)?, urlResponse: _):
+            return nil
+        case .serverError(.none, urlResponse: _):
+            return nil
+        case .dataCorrupted:
+            return nil
+        }
+    }
+
+    public var recoverySuggestion: String? {
+        switch self {
+        case .unknown:
+            return nil
+        case .serverError(.error(let error)?, urlResponse: _):
+            return error.recoverySuggestion
+        case .serverError(.string(_)?, urlResponse: _):
+            return nil
+        case .serverError(.none, urlResponse: _):
+            return nil
+        case .dataCorrupted:
+            return nil
+        }
+    }
+}

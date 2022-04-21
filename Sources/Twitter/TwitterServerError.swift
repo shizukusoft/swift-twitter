@@ -14,3 +14,17 @@ public struct TwitterServerError: Decodable, Error {
     public var reason: String?
     public var value: String?
 }
+
+extension TwitterServerError: LocalizedError {
+    public var errorDescription: String? {
+        title
+    }
+
+    public var failureReason: String? {
+        detail
+    }
+
+    public var recoverySuggestion: String? {
+        reason
+    }
+}
