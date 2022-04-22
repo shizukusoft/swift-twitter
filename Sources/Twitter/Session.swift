@@ -23,7 +23,7 @@ public actor Session {
         self.urlSession = URLSession(configuration: urlSessionConfiguration, delegate: delegate, delegateQueue: nil)
     }
     
-    public convenience init(consumerKey: String, consumerSecret: String, urlSessionConfiguration: URLSessionConfiguration = .twt_default, delegate: Delegate = Delegate()) {
+    public convenience init(consumerKey: String, consumerSecret: String, urlSessionConfiguration: URLSessionConfiguration = .default, delegate: Delegate = Delegate()) {
         self.init(consumerKey, consumerSecret, urlSessionConfiguration, delegate)
         
         Task {
