@@ -8,7 +8,7 @@
 import Foundation
 
 extension URLRequest {
-    var urlComponents: URLComponents? {
+    public var twt_urlComponents: URLComponents? {
         get {
             url.flatMap {
                 URLComponents(url: $0, resolvingAgainstBaseURL: false)

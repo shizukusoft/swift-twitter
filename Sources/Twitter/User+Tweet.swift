@@ -6,17 +6,18 @@
 //
 
 import Foundation
+import TwitterCore
 
 extension User {
     public static func tweets(forUserID userID: User.ID, pageCount: Int16? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<Tweet> {
         var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "2/users/\(userID)/tweets")!)
         urlRequest.httpMethod = "GET"
-        urlRequest.urlComponents?.queryItems = [
+        urlRequest.twt_urlComponents?.queryItems = [
             pageCount.flatMap { URLQueryItem(name: "max_results", value: String($0)) },
             paginationToken.flatMap { URLQueryItem(name: "pagination_token", value: $0) },
             URLQueryItem(name: "tweet.fields", value: "created_at")
         ].compactMap({$0})
-        await urlRequest.oauthSign(session: session)
+        await urlRequest.twt_oauthSign(session: session)
         
         let (data, _) = try await session.data(for: urlRequest)
 

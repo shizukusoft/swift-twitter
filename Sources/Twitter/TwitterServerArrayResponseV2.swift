@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import TwitterCore
 
 struct TwitterServerArrayResponseV2<Element>: Decodable where Element: Decodable {
     struct Meta: Decodable {

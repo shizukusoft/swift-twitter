@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import TwitterCore
 
 struct TwitterServerResponseV2<Value>: Decodable where Value: Decodable {
     let data: Value?

@@ -28,9 +28,11 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "Twitter",
-            dependencies: [.product(name: "OrderedCollections", package: "swift-collections")]),
+            dependencies: ["TwitterCore", .product(name: "OrderedCollections", package: "swift-collections")]),
+        .target(
+            name: "TwitterCore"),
         .testTarget(
-            name: "TwitterTests",
-            dependencies: ["Twitter"]),
+            name: "TwitterCoreTests",
+            dependencies: ["TwitterCore"]),
     ]
 )

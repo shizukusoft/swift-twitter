@@ -41,7 +41,7 @@ public actor Session {
 }
 
 extension Session {
-    nonisolated func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+    public nonisolated func data(for request: URLRequest) async throws -> (Data, URLResponse) {
         let (data, response) = try await urlSession.data(for: request)
         guard
             let httpResponse = response as? HTTPURLResponse,

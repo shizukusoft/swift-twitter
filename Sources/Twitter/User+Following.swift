@@ -6,17 +6,18 @@
 //
 
 import Foundation
+import TwitterCore
 
 extension User {
     public static func followingUsers(forUserID userID: User.ID, pageCount: Int16? = nil, paginationToken: String? = nil, session: Session) async throws -> Pagination<User> {
         var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "2/users/\(userID)/following")!)
         urlRequest.httpMethod = "GET"
-        urlRequest.urlComponents?.queryItems = [
+        urlRequest.twt_urlComponents?.queryItems = [
             pageCount.flatMap { URLQueryItem(name: "max_results", value: String($0)) },
             paginationToken.flatMap { URLQueryItem(name: "pagination_token", value: $0) },
             URLQueryItem(name: "user.fields", value: "created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,withheld")
         ].compactMap({$0})
-        await urlRequest.oauthSign(session: session)
+        await urlRequest.twt_oauthSign(session: session)
 
         let (data, _) = try await session.data(for: urlRequest)
 
@@ -52,11 +53,11 @@ extension User {
     public static func followingUserIDs(forUserID userID: User.ID, paginationToken: String? = nil, session: Session) async throws -> Pagination<User.ID> {
         var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "1.1/friends/ids.json")!)
         urlRequest.httpMethod = "GET"
-        urlRequest.urlComponents?.queryItems = [
+        urlRequest.twt_urlComponents?.queryItems = [
             URLQueryItem(name: "stringify_ids", value: "true"),
             paginationToken.flatMap { URLQueryItem(name: "cursor", value: $0) },
         ].compactMap({$0})
-        await urlRequest.oauthSign(session: session)
+        await urlRequest.twt_oauthSign(session: session)
 
         let (data, _) = try await session.data(for: urlRequest)
 

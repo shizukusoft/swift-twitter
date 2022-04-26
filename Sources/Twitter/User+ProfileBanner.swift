@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import TwitterCore
 
 extension User {
     public struct ProfileBanner {
@@ -22,10 +23,10 @@ extension User {
     public static func profileBanner(forUserID userID: User.ID, session: Session) async throws -> ProfileBanner? {
         var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "1.1/users/profile_banner.json")!)
         urlRequest.httpMethod = "GET"
-        urlRequest.urlComponents?.queryItems = [
+        urlRequest.twt_urlComponents?.queryItems = [
             URLQueryItem(name: "user_id", value: userID)
         ]
-        await urlRequest.oauthSign(session: session)
+        await urlRequest.twt_oauthSign(session: session)
 
         do {
             let (data, _) = try await session.data(for: urlRequest)

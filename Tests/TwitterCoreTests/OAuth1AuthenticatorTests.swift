@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import Twitter
+@testable import TwitterCore
 
 final class OAuth1AuthenticatorTests: XCTestCase {
     func testApply() async {
@@ -22,7 +22,7 @@ final class OAuth1AuthenticatorTests: XCTestCase {
 
         await session.updateCredential(Session.Credential(token: "370773112-GmHxMAgYyLbNEtIKZeRNFsMKPR9EyMZeS9weJAEb", tokenSecret: "LswwdoUaIvS8ltyTt5jkRh4J50vUPVVHtR2YPi5kE"))
 
-        await urlRequest.oauthSign(session: session, nonce: "kYjzVBB8Y0ZFabxSWbWovY3uYSQ2pTgmZeNu2VS4cg", timestamp: 1318622958)
+        await urlRequest.twt_oauthSign(session: session, nonce: "kYjzVBB8Y0ZFabxSWbWovY3uYSQ2pTgmZeNu2VS4cg", timestamp: 1318622958)
 
         XCTAssertEqual(
             urlRequest.value(forHTTPHeaderField: "Authorization"),

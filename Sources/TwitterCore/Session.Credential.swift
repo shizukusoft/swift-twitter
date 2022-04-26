@@ -26,7 +26,7 @@ extension Session {
 }
 
 extension URLRequest {
-    mutating func oauthSign(
+    public mutating func twt_oauthSign(
         session: Session,
         nonce: String = UUID().uuidString,
         timestamp: TimeInterval = Date().timeIntervalSince1970,
@@ -110,14 +110,14 @@ extension URLRequest {
         setValue(oauthAuthorization, forHTTPHeaderField: "Authorization")
     }
 
-    func oauthSigned(
+    public func twt_oauthSigned(
         session: Session,
         nonce: String = UUID().uuidString,
         timestamp: TimeInterval = Date().timeIntervalSince1970,
         additionalOAuthParameters: [String: String]? = nil
     ) async -> URLRequest {
         var urlRequest = self
-        await urlRequest.oauthSign(session: session, nonce: nonce, timestamp: timestamp, additionalOAuthParameters: additionalOAuthParameters)
+        await urlRequest.twt_oauthSign(session: session, nonce: nonce, timestamp: timestamp, additionalOAuthParameters: additionalOAuthParameters)
         return urlRequest
     }
 }
@@ -150,7 +150,7 @@ extension Session {
         var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "oauth/request_token")!)
         urlRequest.httpMethod = "POST"
 
-        await urlRequest.oauthSign(session: self, additionalOAuthParameters: ["oauth_callback": callback])
+        await urlRequest.twt_oauthSign(session: self, additionalOAuthParameters: ["oauth_callback": callback])
 
         let (data, _) = try await data(for: urlRequest)
 
@@ -169,7 +169,7 @@ extension Session {
         var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "oauth/access_token")!)
         urlRequest.httpMethod = "POST"
 
-        await urlRequest.oauthSign(session: self, additionalOAuthParameters: [
+        await urlRequest.twt_oauthSigned(session: self, additionalOAuthParameters: [
             "oauth_verifier": verifier,
             "oauth_token": token
         ])

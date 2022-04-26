@@ -6,16 +6,17 @@
 //
 
 import Foundation
+import TwitterCore
 
 extension User {
     public static func myMutingUserIDs(paginationToken: String? = nil, session: Session) async throws -> Pagination<User.ID> {
         var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "1.1/mutes/users/ids.json")!)
         urlRequest.httpMethod = "GET"
-        urlRequest.urlComponents?.queryItems = [
+        urlRequest.twt_urlComponents?.queryItems = [
             URLQueryItem(name: "stringify_ids", value: "true"),
             paginationToken.flatMap { URLQueryItem(name: "cursor", value: $0) },
         ].compactMap({$0})
-        await urlRequest.oauthSign(session: session)
+        await urlRequest.twt_oauthSign(session: session)
 
         let (data, _) = try await session.data(for: urlRequest)
 

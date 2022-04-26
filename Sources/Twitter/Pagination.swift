@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import TwitterCore
 
 public struct Pagination<Element> where Element: Decodable {
     public let items: Array<Element>
