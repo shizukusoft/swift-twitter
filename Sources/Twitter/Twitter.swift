@@ -6,3 +6,4 @@
 //
 
 @_exported import class TwitterCore.Session
+@_exported import struct TwitterCore.TwitterServerError
