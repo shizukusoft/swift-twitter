@@ -54,7 +54,7 @@ extension User: Decodable {
     enum CodingKeys: String, CodingKey {
         case id
         case name
-        case screenName
+        case screenName = "screen_name"
 
         case location
         case url
@@ -63,15 +63,15 @@ extension User: Decodable {
         case isProtected = "protected"
         case isVerified = "verified"
 
-        case followersCount
-        case friendsCount
-        case listedCount
-        case favouritesCount
-        case statusesCount
+        case followersCount = "followers_count"
+        case friendsCount = "friends_count"
+        case listedCount = "listed_count"
+        case favouritesCount = "favourites_count"
+        case statusesCount = "statuses_count"
 
-        case createdAt
+        case createdAt = "created_at"
 
-        case profileBannerURL
+        case profileBannerURL = "profile_banner_url"
         case profileImageURL = "profile_image_url_https"
     }
 }
