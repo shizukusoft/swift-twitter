@@ -28,7 +28,7 @@ public struct User {
 
     public let createdAt: Date
 
-    public let profileBannerURL: URL
+    public let profileBannerURL: URL?
     public let profileImageURL: URL
 }
 
@@ -42,8 +42,9 @@ extension User {
 
 extension User {
     public var profileBannerOriginalURL: URL? {
-        profileBannerURL
-            .appendingPathComponent("1500x500")
+        profileBannerURL.flatMap {
+            $0.appendingPathComponent("1500x500")
+        }
     }
 }
 
