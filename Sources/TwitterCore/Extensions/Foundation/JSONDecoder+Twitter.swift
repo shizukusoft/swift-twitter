@@ -49,6 +49,7 @@ extension JSONDecoder {
                 return dateFormatter
             }()
         ])
+        jsonDecoder.keyDecodingStrategy = .convertFromSnakeCase
 
         return jsonDecoder
     }

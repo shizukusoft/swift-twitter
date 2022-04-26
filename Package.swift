@@ -16,7 +16,7 @@ let package = Package(
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
             name: "Twitter",
-            targets: ["Twitter"]),
+            targets: ["Twitter", "TwitterV1"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -33,6 +33,9 @@ let package = Package(
             name: "TwitterCore"),
         .testTarget(
             name: "TwitterCoreTests",
+            dependencies: ["TwitterCore"]),
+        .target(
+            name: "TwitterV1",
             dependencies: ["TwitterCore"]),
     ]
 )
