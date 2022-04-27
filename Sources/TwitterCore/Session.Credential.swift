@@ -169,7 +169,7 @@ extension Session {
         var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "oauth/access_token")!)
         urlRequest.httpMethod = "POST"
 
-        await urlRequest.twt_oauthSigned(session: self, additionalOAuthParameters: [
+        await urlRequest.twt_oauthSign(session: self, additionalOAuthParameters: [
             "oauth_verifier": verifier,
             "oauth_token": token
         ])
