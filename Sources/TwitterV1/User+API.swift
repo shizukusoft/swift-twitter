@@ -49,3 +49,15 @@ extension User {
         return users
     }
 }
+
+extension User {
+    public static func me(session: Session) async throws -> User {
+        var urlRequest = URLRequest(url: URL(twitterAPIURLWithPath: "1.1/account/verify_credentials.json")!)
+        urlRequest.httpMethod = "GET"
+        await urlRequest.twt_oauthSign(session: session)
+
+        let (data, _) = try await session.data(for: urlRequest)
+
+        return try JSONDecoder.twt_default.decode(User.self, from: data)
+    }
+}
