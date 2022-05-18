@@ -58,6 +58,8 @@ extension User {
 
         let (data, _) = try await session.data(for: urlRequest)
 
-        return try JSONDecoder.twt_default.decode(User.self, from: data)
+        let user = try JSONDecoder.twt_default.decode(User.self, from: data)
+
+        return user
     }
 }
