@@ -14,7 +14,7 @@ public struct User {
     public let screenName: String
 
     public let location: String?
-    public let url: URL?
+    public let urlString: String?
     public let userDescription: String?
 
     public let urlEntities: Entities
@@ -54,24 +54,22 @@ extension User {
 }
 
 extension User {
-    public var expandedURL: URL? {
-        return url.flatMap { url in
+    public var expandedURLString: String? {
+        return urlString.flatMap { urlString in
             let urlEntities = urlEntities.urls
 
-            return URL(
-                string: urlEntities.reduce(into: url.absoluteString) {
-                    if let range = $0.range(of: $1.urlString), let expandedURL = $1.expandedURL {
-                        $0.replaceSubrange(range, with: expandedURL.absoluteString)
-                    }
+            return urlEntities.reduce(into: urlString) {
+                if let range = $0.range(of: $1.urlString), let expandedURLString = $1.expandedURLString {
+                    $0.replaceSubrange(range, with: expandedURLString)
                 }
-            )
+            }
         }
     }
 
     public var attributedDescription: AttributedString? {
         return attributedDescription {
             var link = AttributedString($0.urlStringForDisplay ?? $0.urlString)
-            link[link.startIndex..<link.endIndex].link = $0.expandedURL ?? URL(string: $0.urlString)
+            link[link.startIndex..<link.endIndex].link = $0.expandedURLString.flatMap { URL(string: $0) } ?? URL(string: $0.urlString)
             return link
         }
     }
@@ -110,7 +108,7 @@ extension User: Decodable {
         case screenName = "screen_name"
 
         case location
-        case url
+        case urlString = "url"
         case userDescription = "description"
 
         case entities
@@ -138,7 +136,7 @@ extension User: Decodable {
         self.screenName = try container.decode(String.self, forKey: .screenName)
 
         self.location = try container.decodeIfPresent(String.self, forKey: .location)
-        self.url = try? container.decode(URL.self, forKey: .url)
+        self.urlString = try? container.decode(String.self, forKey: .urlString)
         self.userDescription = try container.decode(String.self, forKey: .userDescription)
 
         let userEntities = try container.decodeIfPresent(UserEntities.self, forKey: .entities)
